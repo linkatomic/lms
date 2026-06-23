@@ -507,7 +507,7 @@ function DomainAge() {
       <InfoBox label="Why It Matters" color="amber">
         <BulletList items={[
           'Search engines associate longevity with trustworthiness — an older domain has more history to evaluate.',
-          'Domain age alone won't make a site rank — it's one small factor among hundreds.',
+          "Domain age alone won't make a site rank — it's one small factor among hundreds.",
           'A well-optimised new domain will outrank an old, neglected domain.',
         ]} />
       </InfoBox>
