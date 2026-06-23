@@ -6,6 +6,8 @@ import { COURSE } from '@/lib/course-data'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 
+const BUILT_LESSONS = new Set([1, 2, 3, 4, 5, 6])
+
 export default async function CoursePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -62,7 +64,7 @@ export default async function CoursePage() {
                   <p className="text-white/70 text-xs font-semibold uppercase tracking-widest">Module {mod.id}</p>
                   <h3 className="font-bold text-lg leading-snug">{mod.title}</h3>
                 </div>
-                {modIndex > 0 && (
+                {modIndex > 1 && (
                   <div className="ml-auto flex items-center gap-1 bg-white/20 text-white/80 text-xs px-3 py-1.5 rounded-full">
                     <Lock className="w-3 h-3" />
                     Coming Soon
@@ -74,7 +76,7 @@ export default async function CoursePage() {
             {/* Lessons list */}
             <div className="divide-y divide-gray-50 dark:divide-gray-800">
               {mod.lessons.map((lesson, i) => (
-                modIndex === 0 ? (
+                BUILT_LESSONS.has(lesson.id) ? (
                   <Link
                     key={lesson.id}
                     href={`/course/lesson/${lesson.id}`}
