@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ChevronRight, BarChart2, Link2, Link, Star, Copy, AlertOctagon,
+  ChevronRight, BarChart2, Link2, Link, LinkOff, Star, Copy, AlertOctagon,
   Navigation, Globe, Clock, TrendingUp, Award, ExternalLink
 } from 'lucide-react'
 
@@ -14,6 +14,7 @@ const TERMS = [
   { id: 'competitor-analysis', label: 'Competitor Analysis', icon: BarChart2,    color: 'indigo'  },
   { id: 'contextual-links',    label: 'Contextual Links',    icon: Link2,         color: 'teal'    },
   { id: 'dofollow-link',       label: 'Do-follow Link',      icon: Link,          color: 'green'   },
+  { id: 'nofollow-link',       label: 'No-follow Link',      icon: LinkOff,       color: 'cyan'    },
   { id: 'domain-rating',       label: 'Domain Rating (DR)',  icon: Star,          color: 'violet'  },
   { id: 'duplicate-content',   label: 'Duplicate Content',   icon: Copy,          color: 'red'     },
   { id: 'de-index',            label: 'De-Index',            icon: AlertOctagon,  color: 'orange'  },
@@ -27,35 +28,35 @@ const TERMS = [
 // Color maps
 const BG: Record<string, string> = {
   indigo: 'bg-indigo-100 dark:bg-indigo-900/40',   teal: 'bg-teal-100 dark:bg-teal-900/40',
-  green:  'bg-green-100 dark:bg-green-900/40',      violet: 'bg-violet-100 dark:bg-violet-900/40',
-  red:    'bg-red-100 dark:bg-red-900/40',          orange: 'bg-orange-100 dark:bg-orange-900/40',
-  blue:   'bg-blue-100 dark:bg-blue-900/40',        purple: 'bg-purple-100 dark:bg-purple-900/40',
-  amber:  'bg-amber-100 dark:bg-amber-900/40',      emerald: 'bg-emerald-100 dark:bg-emerald-900/40',
-  rose:   'bg-rose-100 dark:bg-rose-900/40',
+  green:  'bg-green-100 dark:bg-green-900/40',      cyan: 'bg-cyan-100 dark:bg-cyan-900/40',
+  violet: 'bg-violet-100 dark:bg-violet-900/40',    red:  'bg-red-100 dark:bg-red-900/40',
+  orange: 'bg-orange-100 dark:bg-orange-900/40',    blue: 'bg-blue-100 dark:bg-blue-900/40',
+  purple: 'bg-purple-100 dark:bg-purple-900/40',    amber: 'bg-amber-100 dark:bg-amber-900/40',
+  emerald: 'bg-emerald-100 dark:bg-emerald-900/40', rose: 'bg-rose-100 dark:bg-rose-900/40',
 }
 const TEXT: Record<string, string> = {
   indigo: 'text-indigo-700 dark:text-indigo-300',   teal: 'text-teal-700 dark:text-teal-300',
-  green:  'text-green-700 dark:text-green-300',      violet: 'text-violet-700 dark:text-violet-300',
-  red:    'text-red-700 dark:text-red-300',          orange: 'text-orange-700 dark:text-orange-300',
-  blue:   'text-blue-700 dark:text-blue-300',        purple: 'text-purple-700 dark:text-purple-300',
-  amber:  'text-amber-700 dark:text-amber-300',      emerald: 'text-emerald-700 dark:text-emerald-300',
-  rose:   'text-rose-700 dark:text-rose-300',
+  green:  'text-green-700 dark:text-green-300',      cyan: 'text-cyan-700 dark:text-cyan-300',
+  violet: 'text-violet-700 dark:text-violet-300',    red:  'text-red-700 dark:text-red-300',
+  orange: 'text-orange-700 dark:text-orange-300',    blue: 'text-blue-700 dark:text-blue-300',
+  purple: 'text-purple-700 dark:text-purple-300',    amber: 'text-amber-700 dark:text-amber-300',
+  emerald: 'text-emerald-700 dark:text-emerald-300', rose: 'text-rose-700 dark:text-rose-300',
 }
 const BORDER: Record<string, string> = {
   indigo: 'border-indigo-200 dark:border-indigo-800',   teal: 'border-teal-200 dark:border-teal-800',
-  green:  'border-green-200 dark:border-green-800',      violet: 'border-violet-200 dark:border-violet-800',
-  red:    'border-red-200 dark:border-red-800',          orange: 'border-orange-200 dark:border-orange-800',
-  blue:   'border-blue-200 dark:border-blue-800',        purple: 'border-purple-200 dark:border-purple-800',
-  amber:  'border-amber-200 dark:border-amber-800',      emerald: 'border-emerald-200 dark:border-emerald-800',
-  rose:   'border-rose-200 dark:border-rose-800',
+  green:  'border-green-200 dark:border-green-800',      cyan: 'border-cyan-200 dark:border-cyan-800',
+  violet: 'border-violet-200 dark:border-violet-800',    red:  'border-red-200 dark:border-red-800',
+  orange: 'border-orange-200 dark:border-orange-800',    blue: 'border-blue-200 dark:border-blue-800',
+  purple: 'border-purple-200 dark:border-purple-800',    amber: 'border-amber-200 dark:border-amber-800',
+  emerald: 'border-emerald-200 dark:border-emerald-800', rose: 'border-rose-200 dark:border-rose-800',
 }
 const GRADIENT: Record<string, string> = {
   indigo: 'from-indigo-500 to-blue-600',     teal: 'from-teal-500 to-cyan-600',
-  green:  'from-green-500 to-emerald-600',   violet: 'from-violet-500 to-purple-600',
-  red:    'from-red-500 to-rose-600',        orange: 'from-orange-500 to-amber-600',
-  blue:   'from-blue-500 to-indigo-600',     purple: 'from-purple-500 to-violet-600',
-  amber:  'from-amber-500 to-orange-600',    emerald: 'from-emerald-500 to-teal-600',
-  rose:   'from-rose-500 to-pink-600',
+  green:  'from-green-500 to-emerald-600',   cyan: 'from-cyan-500 to-teal-600',
+  violet: 'from-violet-500 to-purple-600',   red:  'from-red-500 to-rose-600',
+  orange: 'from-orange-500 to-amber-600',    blue: 'from-blue-500 to-indigo-600',
+  purple: 'from-purple-500 to-violet-600',   amber: 'from-amber-500 to-orange-600',
+  emerald: 'from-emerald-500 to-teal-600',   rose: 'from-rose-500 to-pink-600',
 }
 
 // ─────────────────────────────────────
@@ -275,20 +276,82 @@ function DofollowLink() {
         />
       </div>
 
-      <div className="my-5">
-        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Tool: NoFollow Browser Extension</p>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-          Alternatively, use the <strong>NoFollow</strong> extension for Chrome or Firefox, which highlights
-          no-follow links directly on the page — so you don't have to inspect the code manually.
+      <YouTubeEmbed videoId="YxCsC9Mua3Q" caption="How to check if a link is do-follow or no-follow" />
+    </section>
+  )
+}
+
+function NofollowLink() {
+  return (
+    <section id="nofollow-link">
+      <TermHeader id="nofollow-link" color="cyan" />
+      <DefinitionCard color="cyan">
+        A no-follow link is a type of hyperlink that <strong>tells search engines NOT to follow the
+        link or pass any SEO value (link juice)</strong> to the destination site. It is created by
+        adding the <code className="bg-cyan-100 dark:bg-cyan-900 px-1.5 py-0.5 rounded text-xs font-mono text-cyan-700 dark:text-cyan-300">rel="nofollow"</code> attribute to the anchor tag.
+      </DefinitionCard>
+
+      <p className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed mb-4">
+        While no-follow links do not directly pass SEO authority, they can still drive referral traffic
+        and contribute to a natural-looking backlink profile — which is a positive signal to Google.
+      </p>
+
+      <InfoBox label="HTML Example" color="cyan">
+        <p className="text-sm text-gray-700 dark:text-gray-200 mb-2">
+          A no-follow link includes <code className="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs font-mono">rel="nofollow"</code> in the anchor tag:
         </p>
+        <CodeBlock code={`<a href="https://www.example.com" rel="nofollow">Example Website</a>`} />
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+          Compare this to a do-follow link which has <em>no</em> rel attribute at all.
+        </p>
+      </InfoBox>
+
+      <InfoBox label="When No-follow Links Are Used" color="cyan">
+        <BulletList items={[
+          'Paid or sponsored content — to signal to Google the link was paid for, not editorially earned.',
+          'User-generated content (comments, forums) — to prevent spammers from exploiting links.',
+          'Untrusted or unverified external sites — when you want to link out but not vouch for them.',
+          'Social media links — most platforms add nofollow to all external links by default.',
+        ]} />
+      </InfoBox>
+
+      <div className="my-5">
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">
+          Tool: NoFollow Chrome Extension
+        </p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          Install the <strong>NoFollow</strong> browser extension to instantly see which links on any
+          page are no-follow — they get highlighted with a red/orange box so you can spot them without
+          opening DevTools.
+        </p>
+        <a
+          href="https://chromewebstore.google.com/detail/nofollow/dfogidghaigoomjdeacndafapdijmiid"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 mb-4 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-semibold transition"
+        >
+          <ExternalLink className="w-4 h-4" />
+          Install NoFollow Extension for Chrome
+        </a>
         <Screenshot
           src="/images/lesson13/dofollow-link-barchart.png"
-          alt="Barchart.com article with a do-follow contextual link 'sites not on GamStop' highlighted in a red box — demonstrating a real dofollow link in the wild"
-          caption="Real-world example: 'sites not on GamStop' is a do-follow contextual link on barchart.com."
+          alt="Barchart.com article with the NoFollow extension active — a no-follow link 'sites not on GamStop' is highlighted in a red box, making it immediately visible without inspecting the HTML"
+          caption="NoFollow extension in action: no-follow links appear highlighted in a red box directly on the page."
         />
       </div>
 
-      <YouTubeEmbed videoId="YxCsC9Mua3Q" caption="How to check if a link is do-follow or no-follow" />
+      <InfoBox label="Do-follow vs No-follow — Quick Summary" color="cyan">
+        <div className="grid grid-cols-2 gap-3 mt-1">
+          <div className="bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <p className="text-xs font-bold text-green-700 dark:text-green-400 mb-1">Do-follow ✓</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">Passes link juice. No rel attribute in HTML.</p>
+          </div>
+          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg p-3">
+            <p className="text-xs font-bold text-red-700 dark:text-red-400 mb-1">No-follow ✗</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">Blocks link juice. Has <code className="font-mono text-[10px]">rel="nofollow"</code> in HTML.</p>
+          </div>
+        </div>
+      </InfoBox>
     </section>
   )
 }
@@ -598,7 +661,7 @@ function EditorialLink() {
 // Main component
 // ─────────────────────────────────────
 const SECTION_COMPONENTS = [
-  CompetitorAnalysis, ContextualLinks, DofollowLink, DomainRating,
+  CompetitorAnalysis, ContextualLinks, DofollowLink, NofollowLink, DomainRating,
   DuplicateContent, DeIndex, DirectTraffic, Domain,
   DomainAge, DomainAuthority, EditorialLink,
 ]
@@ -651,11 +714,11 @@ export default function Lesson13KeyTerminologies() {
           <p className="text-violet-200 text-xs font-bold uppercase tracking-widest mb-2">Module 2 · Lesson 13</p>
           <h1 className="text-2xl sm:text-3xl font-bold mb-3">Key Terminologies in Content Marketing — 2</h1>
           <p className="text-violet-100 text-sm leading-relaxed max-w-xl">
-            11 essential SEO and content marketing terms: from Competitor Analysis and Contextual Links
-            through Domain Authority and Editorial Links.
+            12 essential SEO and content marketing terms: Competitor Analysis, Contextual Links,
+            Do-follow &amp; No-follow Links, Domain Authority, Editorial Links, and more.
           </p>
           <div className="mt-4 flex items-center gap-4 text-sm text-violet-200">
-            <span>📚 11 Terms</span>
+            <span>📚 12 Terms</span>
             <span>🖼️ 12 Screenshots</span>
             <span>▶️ 2 Videos</span>
           </div>
