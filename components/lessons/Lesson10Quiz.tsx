@@ -30,8 +30,8 @@ const questions: Question[] = [
   {
     id: 1, type: 'mcq',
     text: 'Which of the following is NOT a key component of digital marketing?',
-    options: ['Search Engine Optimization (SEO)', 'Content Marketing', 'Print Advertising'],
-    correct: 2,
+    options: ['Print Advertising', 'Search Engine Optimization (SEO)', 'Content Marketing'],
+    correct: 0,
     explanation: 'Print Advertising is a traditional (offline) channel. SEO and Content Marketing are both core digital marketing pillars.',
   },
   {
@@ -39,21 +39,21 @@ const questions: Question[] = [
     text: 'What is the primary networking benefit of guest posting?',
     options: [
       'It isolates your business from industry competitors',
-      'It connects you with bloggers, influencers, and industry experts',
       'It limits your brand\'s collaboration opportunities',
+      'It connects you with bloggers, influencers, and industry experts',
     ],
-    correct: 1,
+    correct: 2,
     explanation: 'Guest posting naturally builds relationships with publishers and experts, opening doors to future collaborations and referrals.',
   },
   {
     id: 3, type: 'mcq',
     text: 'Guest posting builds brand authority primarily because it...',
     options: [
-      'Allows businesses to bypass SEO entirely',
       'Gets your expert content published on reputable external websites',
+      'Allows businesses to bypass SEO entirely',
       'Generates immediate, direct product sales',
     ],
-    correct: 1,
+    correct: 0,
     explanation: 'Being featured on authoritative websites signals to both readers and search engines that you are an expert in your field.',
   },
   {
@@ -61,10 +61,10 @@ const questions: Question[] = [
     text: 'In the future of digital marketing, what is the main role of AI and automation?',
     options: [
       'Replace all human marketers entirely',
-      'Enhance personalization and improve marketing efficiency',
       'AI will only be used for customer service chatbots',
+      'Enhance personalization and improve marketing efficiency',
     ],
-    correct: 1,
+    correct: 2,
     explanation: 'AI is a tool that enhances marketing — not a replacement for marketers. It boosts personalization, speed, and efficiency.',
   },
   {
@@ -77,28 +77,28 @@ const questions: Question[] = [
     text: 'A fashion brand sends free products to popular Instagram accounts with millions of followers for honest reviews. What digital marketing strategy is this?',
     options: [
       'Search Engine Marketing (SEM)',
-      'Pay-Per-Click (PPC)',
       'Influencer Marketing',
+      'Pay-Per-Click (PPC)',
     ],
-    correct: 2,
+    correct: 1,
     explanation: 'Influencer Marketing involves collaborating with people who have large, trusted followings to promote your brand authentically.',
   },
   {
     id: 7, type: 'mcq',
     text: 'A customer has been reading your weekly newsletter for 6 months and just made their 3rd purchase. Which content marketing benefit does this BEST show?',
     options: [
-      'Generating leads through unsolicited cold emails',
       'Earning customer loyalty through consistent educational value',
+      'Generating leads through unsolicited cold emails',
       'Hard-selling products to first-time visitors',
     ],
-    correct: 1,
+    correct: 0,
     explanation: 'Consistent, valuable content builds habits around your brand — turning readers into loyal, repeat buyers over time.',
   },
   {
     id: 8, type: 'mcq',
     text: 'A company offers a free 40-page SEO guide — but you must submit your email to download it. What type of content marketing is this?',
-    options: ['Social Media Posts', 'Gated E-books & Whitepapers', 'Case Studies'],
-    correct: 1,
+    options: ['Social Media Posts', 'Case Studies', 'Gated E-books & Whitepapers'],
+    correct: 2,
     explanation: 'Gated content trades value (the guide) for contact details (the email) — a classic lead generation technique.',
   },
   {
@@ -117,28 +117,28 @@ const questions: Question[] = [
     text: 'What is the PRIMARY goal of content marketing?',
     options: [
       'To entertain audiences with no business objective',
-      'To sell products directly through paid advertisements',
       'To generate leads, build brand awareness, and engage a target audience',
+      'To sell products directly through paid advertisements',
     ],
-    correct: 2,
+    correct: 1,
     explanation: 'Content marketing serves multiple business goals — awareness, leads, trust, and loyalty — through consistently valuable content.',
   },
   {
     id: 11, type: 'mcq',
     text: 'A startup with a limited budget chooses digital marketing over TV advertising. What is the MAIN advantage?',
     options: [
-      'Digital marketing always has larger upfront costs',
       'Digital marketing provides real-time analytics and measurable results',
+      'Digital marketing always has larger upfront costs',
       'Digital marketing requires no target audience definition',
     ],
-    correct: 1,
+    correct: 0,
     explanation: 'Digital marketing lets you track every click, view, and conversion in real time — something TV ads can never offer.',
   },
   {
     id: 12, type: 'mcq',
     text: 'Which of the following is NOT an example of content marketing?',
-    options: ['Blog Posts', 'TV Commercials', 'E-books & Whitepapers'],
-    correct: 1,
+    options: ['Blog Posts', 'E-books & Whitepapers', 'TV Commercials'],
+    correct: 2,
     explanation: 'TV Commercials are traditional broadcast advertising, not content marketing. Blog posts and e-books are core content marketing formats.',
   },
   {
@@ -156,11 +156,11 @@ const questions: Question[] = [
     id: 14, type: 'mcq',
     text: 'You want your ad to appear at the TOP of Google search results immediately — without waiting months for SEO. Which strategy do you choose?',
     options: [
+      'Search Engine Marketing (SEM)',
       'Content Marketing',
       'Social Media Marketing (SMM)',
-      'Search Engine Marketing (SEM)',
     ],
-    correct: 2,
+    correct: 0,
     explanation: 'SEM (paid search ads) gets you to the top of search results immediately — you pay for that placement.',
   },
   {
@@ -168,10 +168,10 @@ const questions: Question[] = [
     text: 'Which of the following BEST defines Digital Marketing?',
     options: [
       'Marketing using print media and television',
-      'Marketing efforts using electronic devices or the internet',
       'Door-to-door sales campaigns',
+      'Marketing efforts using electronic devices or the internet',
     ],
-    correct: 1,
+    correct: 2,
     explanation: 'Digital marketing encompasses all marketing that uses electronic devices or the internet — SEO, social media, email, and more.',
   },
   {
@@ -191,17 +191,17 @@ const questions: Question[] = [
     text: 'Which of the following CORRECTLY describes a benefit of guest posting?',
     options: [
       'It decreases your website traffic over time',
-      'It improves SEO through backlinks and increases website traffic',
       'It reduces your brand\'s online authority',
+      'It improves SEO through backlinks and increases website traffic',
     ],
-    correct: 1,
+    correct: 2,
     explanation: 'Guest posting delivers two SEO and traffic benefits simultaneously — backlinks boost rankings, and the host site sends you referral visitors.',
   },
   {
     id: 19, type: 'mcq',
     text: 'PPC stands for:',
-    options: ['Post-Paid Cost', 'Pay-Per-Click', 'Prepaid Clicks'],
-    correct: 1,
+    options: ['Pay-Per-Click', 'Post-Paid Cost', 'Prepaid Clicks'],
+    correct: 0,
     explanation: 'PPC (Pay-Per-Click) is an ad model where you pay only when someone actually clicks your ad — not just for it being shown.',
   },
   {
