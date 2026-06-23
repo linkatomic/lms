@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  ChevronRight, BarChart2, Link2, Link, LinkOff, Star, Copy, AlertOctagon,
+  ChevronRight, BarChart2, Link2, Link, Link2Off, Star, Copy, AlertOctagon,
   Navigation, Globe, Clock, TrendingUp, Award, ExternalLink
 } from 'lucide-react'
 
@@ -14,7 +14,7 @@ const TERMS = [
   { id: 'competitor-analysis', label: 'Competitor Analysis', icon: BarChart2,    color: 'indigo'  },
   { id: 'contextual-links',    label: 'Contextual Links',    icon: Link2,         color: 'teal'    },
   { id: 'dofollow-link',       label: 'Do-follow Link',      icon: Link,          color: 'green'   },
-  { id: 'nofollow-link',       label: 'No-follow Link',      icon: LinkOff,       color: 'cyan'    },
+  { id: 'nofollow-link',       label: 'No-follow Link',      icon: Link2Off,      color: 'cyan'    },
   { id: 'domain-rating',       label: 'Domain Rating (DR)',  icon: Star,          color: 'violet'  },
   { id: 'duplicate-content',   label: 'Duplicate Content',   icon: Copy,          color: 'red'     },
   { id: 'de-index',            label: 'De-Index',            icon: AlertOctagon,  color: 'orange'  },
