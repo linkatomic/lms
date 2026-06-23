@@ -77,7 +77,7 @@ export default function Lesson1HistoryOverview() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-xl font-bold text-gray-800 mb-5"
+          className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-5"
         >
           AMRYTT MEDIA by the numbers
         </motion.h2>
@@ -91,15 +91,15 @@ export default function Lesson1HistoryOverview() {
               whileInView="visible"
               viewport={{ once: true }}
               whileHover={{ y: -4, scale: 1.03 }}
-              className={`bg-white rounded-2xl border ${s.border} p-5 text-center shadow-sm`}
+              className={`bg-white dark:bg-gray-900 rounded-2xl border ${s.border} dark:border-gray-700 p-5 text-center shadow-sm`}
             >
               <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${s.color} mb-3`}>
                 <s.icon className="w-5 h-5" />
               </div>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-3xl font-bold text-gray-900 dark:text-gray-50">
                 <AnimatedCounter to={s.value} suffix={s.suffix} />
               </div>
-              <div className="text-xs text-gray-500 mt-1 font-medium">{s.label}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">{s.label}</div>
             </motion.div>
           ))}
         </div>
@@ -110,21 +110,21 @@ export default function Lesson1HistoryOverview() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7"
+        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-7"
       >
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
           <Zap className="w-5 h-5 text-indigo-500" /> Our Story
         </h2>
-        <p className="text-gray-600 leading-relaxed text-base">
+        <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-base">
           Founded in <strong>Sheridan, Wyoming</strong> in 2022 by <strong>Mr. Bhagyesh Patel</strong> and <strong>Mr. Manish Suthar</strong> — two visionary leaders with over <strong>12 years of combined digital marketing experience</strong>.
         </p>
-        <p className="text-gray-600 leading-relaxed text-base mt-3">
+        <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-base mt-3">
           Their passion for the industry is infectious, inspiring a team of experts to push boundaries and drive performance. With their leadership, AMRYTT MEDIA embodies a forward-thinking, client-centric philosophy.
         </p>
 
-        <div className="mt-5 p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-          <p className="text-indigo-800 font-semibold text-sm">💡 Did you know?</p>
-          <p className="text-indigo-700 text-sm mt-1">
+        <div className="mt-5 p-4 bg-indigo-50 dark:bg-indigo-950 rounded-xl border border-indigo-100 dark:border-indigo-800">
+          <p className="text-indigo-800 dark:text-indigo-300 font-semibold text-sm">💡 Did you know?</p>
+          <p className="text-indigo-700 dark:text-indigo-300 text-sm mt-1">
             In just <strong>3 years</strong>, AMRYTT MEDIA grew from <strong>5 people</strong> to a thriving team of <strong>45+ professionals</strong>! That's 9× growth — a testament to our culture of innovation and excellence.
           </p>
         </div>
@@ -136,12 +136,12 @@ export default function Lesson1HistoryOverview() {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-xl font-bold text-gray-800 mb-6"
+          className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6"
         >
           Our Growth Journey
         </motion.h2>
         <div className="relative">
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-indigo-100" />
+          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-indigo-100 dark:bg-indigo-900" />
           <div className="space-y-6">
             {timeline.map((item, i) => (
               <motion.div
@@ -153,13 +153,13 @@ export default function Lesson1HistoryOverview() {
                 viewport={{ once: true }}
                 className="relative pl-16"
               >
-                <div className="absolute left-0 w-12 h-12 bg-white border-2 border-indigo-200 rounded-2xl flex items-center justify-center text-xl shadow-sm">
+                <div className="absolute left-0 w-12 h-12 bg-white dark:bg-gray-900 border-2 border-indigo-200 dark:border-indigo-700 rounded-2xl flex items-center justify-center text-xl shadow-sm">
                   {item.icon}
                 </div>
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">{item.year}</span>
-                  <h3 className="font-bold text-gray-900 mt-1">{item.title}</h3>
-                  <p className="text-gray-500 text-sm mt-1 leading-relaxed">{item.desc}</p>
+                <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+                  <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{item.year}</span>
+                  <h3 className="font-bold text-gray-900 dark:text-gray-50 mt-1">{item.title}</h3>
+                  <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 leading-relaxed">{item.desc}</p>
                 </div>
               </motion.div>
             ))}
@@ -172,12 +172,12 @@ export default function Lesson1HistoryOverview() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="bg-gradient-to-r from-gray-50 to-indigo-50 rounded-2xl border border-indigo-100 p-7"
+        className="bg-gradient-to-r from-gray-50 to-indigo-50 dark:from-gray-900 dark:to-indigo-950 rounded-2xl border border-indigo-100 dark:border-indigo-900 p-7"
       >
-        <h2 className="text-xl font-bold text-gray-800 mb-4">What We Do</h2>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">What We Do</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {['Content Marketing', 'Paid Search (PPC)', 'Display Advertising', 'Social Media Marketing', 'SEO', 'Guest Posting'].map(service => (
-            <div key={service} className="bg-white rounded-xl px-4 py-3 text-sm font-medium text-gray-700 border border-gray-100 shadow-sm flex items-center gap-2">
+            <div key={service} className="bg-white dark:bg-gray-800 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 border border-gray-100 dark:border-gray-700 shadow-sm flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0" />
               {service}
             </div>
@@ -190,13 +190,13 @@ export default function Lesson1HistoryOverview() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7"
+        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-7"
       >
-        <p className="text-gray-500 text-sm font-medium mb-2">Our Mission (in a nutshell)</p>
-        <p className="text-gray-900 text-lg font-semibold leading-relaxed italic">
+        <p className="text-gray-500 dark:text-gray-400 text-sm font-medium mb-2">Our Mission (in a nutshell)</p>
+        <p className="text-gray-900 dark:text-gray-50 text-lg font-semibold leading-relaxed italic">
           "To elevate brands and achieve measurable, tangible success through a balance of creativity and precision."
         </p>
-        <p className="text-gray-400 text-sm mt-3">👉 We'll dive deep into Mission, Vision & Core Values in the next lesson!</p>
+        <p className="text-gray-400 dark:text-gray-500 text-sm mt-3">👉 We'll dive deep into Mission, Vision & Core Values in the next lesson!</p>
       </motion.div>
 
     </div>

@@ -77,12 +77,12 @@ function FlipCard({ value, index }: { value: typeof coreValues[0]; index: number
       >
         {/* Front */}
         <div
-          className={`absolute inset-0 rounded-2xl border ${value.border} ${value.bg} flex flex-col items-center justify-center p-5 shadow-sm`}
+          className={`absolute inset-0 rounded-2xl border ${value.border} dark:border-opacity-40 ${value.bg} dark:bg-opacity-10 dark:bg-gray-800 flex flex-col items-center justify-center p-5 shadow-sm`}
           style={{ backfaceVisibility: 'hidden' }}
         >
           <span className="text-4xl mb-3">{value.emoji}</span>
-          <p className="font-bold text-gray-800 text-center text-sm">{value.name}</p>
-          <p className="text-xs text-gray-400 mt-2">Tap to reveal quote →</p>
+          <p className="font-bold text-gray-800 dark:text-gray-100 text-center text-sm">{value.name}</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Tap to reveal quote →</p>
         </div>
 
         {/* Back */}
@@ -135,13 +135,13 @@ export default function Lesson2VisionMission() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7"
+        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-7"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-            <Target className="w-5 h-5 text-indigo-600" />
+          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-xl flex items-center justify-center">
+            <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Our Mission</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">Our Mission</h2>
         </div>
         <div className="space-y-4">
           {missionPoints.map((point, i) => (
@@ -156,7 +156,7 @@ export default function Lesson2VisionMission() {
               <div className="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                 {i + 1}
               </div>
-              <p className="text-gray-600 leading-relaxed text-[15px]">{point}</p>
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-[15px]">{point}</p>
             </motion.div>
           ))}
         </div>
@@ -167,13 +167,13 @@ export default function Lesson2VisionMission() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7"
+        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-7"
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center">
-            <Eye className="w-5 h-5 text-violet-600" />
+          <div className="w-10 h-10 bg-violet-100 dark:bg-violet-900 rounded-xl flex items-center justify-center">
+            <Eye className="w-5 h-5 text-violet-600 dark:text-violet-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Our Vision</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">Our Vision</h2>
         </div>
         <div className="space-y-4">
           {visionPoints.map((point, i) => (
@@ -183,10 +183,10 @@ export default function Lesson2VisionMission() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="flex gap-3 items-start bg-violet-50 rounded-xl p-4 border border-violet-100"
+              className="flex gap-3 items-start bg-violet-50 dark:bg-violet-950 rounded-xl p-4 border border-violet-100 dark:border-violet-800"
             >
-              <span className="text-violet-500 mt-0.5 flex-shrink-0">◆</span>
-              <p className="text-gray-700 leading-relaxed text-[15px]">{point}</p>
+              <span className="text-violet-500 dark:text-violet-400 mt-0.5 flex-shrink-0">◆</span>
+              <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-[15px]">{point}</p>
             </motion.div>
           ))}
         </div>
@@ -200,10 +200,10 @@ export default function Lesson2VisionMission() {
           viewport={{ once: true }}
           className="flex items-center gap-3 mb-2"
         >
-          <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center">
-            <Heart className="w-5 h-5 text-pink-600" />
+          <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-xl flex items-center justify-center">
+            <Heart className="w-5 h-5 text-pink-600 dark:text-pink-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Our Core Values</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">Our Core Values</h2>
         </motion.div>
         <motion.p
           initial={{ opacity: 0 }}
@@ -225,10 +225,10 @@ export default function Lesson2VisionMission() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="bg-gradient-to-r from-indigo-50 to-violet-50 rounded-2xl border border-indigo-100 p-7"
+        className="bg-gradient-to-r from-indigo-50 to-violet-50 dark:from-indigo-950 dark:to-violet-950 rounded-2xl border border-indigo-100 dark:border-indigo-800 p-7"
       >
-        <p className="text-lg font-bold text-gray-900 mb-2">🎯 Key Takeaway</p>
-        <p className="text-gray-600 leading-relaxed">
+        <p className="text-lg font-bold text-gray-900 dark:text-gray-50 mb-2">🎯 Key Takeaway</p>
+        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
           At AMRYTT MEDIA, our Mission is our <em>daily commitment</em>, our Vision is our <em>north star</em>, and our Core Values are the <em>rules we live by</em>. Every decision — big or small — is filtered through these principles.
         </p>
       </motion.div>

@@ -78,10 +78,10 @@ export default function Lesson3Goals() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="bg-amber-50 border border-amber-100 rounded-2xl p-6"
+        className="bg-amber-50 dark:bg-amber-950 border border-amber-100 dark:border-amber-800 rounded-2xl p-6"
       >
-        <p className="text-amber-800 font-semibold text-sm mb-1">📖 Quick Definition</p>
-        <p className="text-amber-900 text-[15px] leading-relaxed">
+        <p className="text-amber-800 dark:text-amber-300 font-semibold text-sm mb-1">📖 Quick Definition</p>
+        <p className="text-amber-900 dark:text-amber-200 text-[15px] leading-relaxed">
           Goals and objectives are the <strong>specific targets and outcomes</strong> a company aims to achieve. They provide a clear direction for the company's activities and help measure its progress.
         </p>
       </motion.div>
@@ -94,12 +94,12 @@ export default function Lesson3Goals() {
           viewport={{ once: true }}
           className="flex items-center gap-3 mb-5"
         >
-          <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-            <Target className="w-5 h-5 text-indigo-600" />
+          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-xl flex items-center justify-center">
+            <Target className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Short-Term Goals</h2>
-            <p className="text-sm text-gray-500">Things we're actively working on right now</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">Short-Term Goals</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Things we're actively working on right now</p>
           </div>
         </motion.div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -112,11 +112,11 @@ export default function Lesson3Goals() {
               whileInView="visible"
               viewport={{ once: true }}
               whileHover={{ y: -3, scale: 1.02 }}
-              className="bg-white rounded-2xl border border-indigo-100 shadow-sm p-5"
+              className="bg-white dark:bg-gray-900 rounded-2xl border border-indigo-100 dark:border-indigo-800 shadow-sm p-5"
             >
               <span className="text-3xl mb-3 block">{goal.emoji}</span>
-              <h3 className="font-bold text-gray-900 text-sm mb-2">{goal.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{goal.desc}</p>
+              <h3 className="font-bold text-gray-900 dark:text-gray-50 text-sm mb-2">{goal.title}</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{goal.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -124,12 +124,12 @@ export default function Lesson3Goals() {
 
       {/* Visual divider */}
       <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-gray-200" />
-        <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full text-gray-500 text-sm font-medium">
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
+        <div className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 dark:text-gray-400 text-sm font-medium">
           <Rocket className="w-4 h-4" />
           Looking further ahead…
         </div>
-        <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex-1 h-px bg-gray-200 dark:bg-gray-800" />
       </div>
 
       {/* Long-term goals */}
@@ -140,12 +140,12 @@ export default function Lesson3Goals() {
           viewport={{ once: true }}
           className="flex items-center gap-3 mb-5"
         >
-          <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
-            <Globe className="w-5 h-5 text-emerald-600" />
+          <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-xl flex items-center justify-center">
+            <Globe className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Long-Term Goals</h2>
-            <p className="text-sm text-gray-500">The big picture — where we're headed over the next 5+ years</p>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">Long-Term Goals</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">The big picture — where we're headed over the next 5+ years</p>
           </div>
         </motion.div>
         <div className="grid sm:grid-cols-2 gap-4">
@@ -158,11 +158,11 @@ export default function Lesson3Goals() {
               whileInView="visible"
               viewport={{ once: true }}
               whileHover={{ y: -3, scale: 1.02 }}
-              className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-5"
+              className="bg-white dark:bg-gray-900 rounded-2xl border border-emerald-100 dark:border-emerald-800 shadow-sm p-5"
             >
               <span className="text-3xl mb-3 block">{goal.emoji}</span>
-              <h3 className="font-bold text-gray-900 text-sm mb-2">{goal.title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{goal.desc}</p>
+              <h3 className="font-bold text-gray-900 dark:text-gray-50 text-sm mb-2">{goal.title}</h3>
+              <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">{goal.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -173,10 +173,10 @@ export default function Lesson3Goals() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="bg-gradient-to-r from-indigo-50 to-emerald-50 rounded-2xl border border-indigo-100 p-7"
+        className="bg-gradient-to-r from-indigo-50 to-emerald-50 dark:from-indigo-950 dark:to-emerald-950 rounded-2xl border border-indigo-100 dark:border-indigo-800 p-7"
       >
-        <p className="text-lg font-bold text-gray-900 mb-2">🎯 Your Role in These Goals</p>
-        <p className="text-gray-600 leading-relaxed">
+        <p className="text-lg font-bold text-gray-900 dark:text-gray-50 mb-2">🎯 Your Role in These Goals</p>
+        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
           Every person at AMRYTT MEDIA contributes to these goals. As a new team member, your work — no matter which department you're in — directly supports our mission to grow, innovate, and lead.
         </p>
       </motion.div>

@@ -77,22 +77,22 @@ function PillarCard({ pillar, index }: { pillar: typeof pillars[0]; index: numbe
       transition={{ delay: index * 0.08, duration: 0.45 }}
     >
       <div
-        className={`bg-white rounded-2xl border ${pillar.border} shadow-sm overflow-hidden cursor-pointer`}
+        className={`bg-white dark:bg-gray-900 rounded-2xl border ${pillar.border} dark:border-opacity-40 dark:border-gray-700 shadow-sm overflow-hidden cursor-pointer`}
         onClick={() => setExpanded(e => !e)}
       >
         {/* Header */}
-        <div className={`${pillar.bg} px-6 py-5 flex items-center gap-4`}>
+        <div className={`${pillar.bg} dark:bg-gray-800 px-6 py-5 flex items-center gap-4`}>
           <div className={`w-12 h-12 bg-gradient-to-br ${pillar.color} rounded-xl flex items-center justify-center text-xl shadow-sm`}>
             {pillar.emoji}
           </div>
           <div className="flex-1">
-            <p className={`text-xs font-bold uppercase tracking-widest ${pillar.text} mb-0.5`}>Pillar {pillar.number}</p>
-            <h3 className="font-bold text-gray-900 text-sm leading-snug">{pillar.title}</h3>
+            <p className={`text-xs font-bold uppercase tracking-widest ${pillar.text} dark:opacity-80 mb-0.5`}>Pillar {pillar.number}</p>
+            <h3 className="font-bold text-gray-900 dark:text-gray-50 text-sm leading-snug">{pillar.title}</h3>
           </div>
           <motion.div
             animate={{ rotate: expanded ? 45 : 0 }}
             transition={{ duration: 0.2 }}
-            className={`w-7 h-7 flex-shrink-0 ${pillar.bg} ${pillar.text} border ${pillar.border} rounded-full flex items-center justify-center text-lg font-bold`}
+            className={`w-7 h-7 flex-shrink-0 ${pillar.bg} dark:bg-gray-700 ${pillar.text} dark:opacity-80 border ${pillar.border} dark:border-gray-600 rounded-full flex items-center justify-center text-lg font-bold`}
           >
             +
           </motion.div>
@@ -105,8 +105,8 @@ function PillarCard({ pillar, index }: { pillar: typeof pillars[0]; index: numbe
           transition={{ duration: 0.3 }}
           className="overflow-hidden"
         >
-          <div className="px-6 py-5 border-t border-gray-100">
-            <p className="text-gray-600 text-sm leading-relaxed italic">{pillar.quote}</p>
+          <div className="px-6 py-5 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed italic">{pillar.quote}</p>
           </div>
         </motion.div>
       </div>
@@ -137,9 +137,9 @@ export default function Lesson4Philosophy() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-2xl border border-violet-100 p-6"
+        className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950 dark:to-indigo-950 rounded-2xl border border-violet-100 dark:border-violet-800 p-6"
       >
-        <p className="text-gray-700 leading-relaxed text-[15px]">
+        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-[15px]">
           AMRYTT MEDIA is committed to providing exceptional digital solutions that empower businesses to succeed in today's competitive landscape. Our philosophy is rooted in <strong>quality, integrity, partnership, innovation, customer focus, sustainability, and global reach</strong>.
         </p>
       </motion.div>
@@ -152,8 +152,8 @@ export default function Lesson4Philosophy() {
           viewport={{ once: true }}
           className="mb-4"
         >
-          <h2 className="text-xl font-bold text-gray-900">The 6 Pillars</h2>
-          <p className="text-gray-500 text-sm mt-1">✨ Tap each pillar to read the full philosophy statement.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">The 6 Pillars</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">✨ Tap each pillar to read the full philosophy statement.</p>
         </motion.div>
         <div className="space-y-3">
           {pillars.map((pillar, i) => (
@@ -167,10 +167,10 @@ export default function Lesson4Philosophy() {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="bg-white rounded-2xl border border-gray-100 shadow-sm p-7"
+        className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-7"
       >
-        <p className="text-lg font-bold text-gray-900 mb-3">🎯 Why This Matters for You</p>
-        <p className="text-gray-600 leading-relaxed">
+        <p className="text-lg font-bold text-gray-900 dark:text-gray-50 mb-3">🎯 Why This Matters for You</p>
+        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
           As a member of AMRYTT MEDIA, you are a living embodiment of these principles. Every email you write, every client interaction, every deliverable — it's all rooted in these 6 pillars. Understanding them isn't just useful. It's essential.
         </p>
       </motion.div>

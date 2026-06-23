@@ -105,21 +105,21 @@ function DeptCard({ dept, index }: { dept: typeof departments[0]; index: number 
       transition={{ delay: index * 0.07, duration: 0.4 }}
     >
       <div
-        className={`bg-white rounded-2xl border ${dept.border} shadow-sm overflow-hidden cursor-pointer`}
+        className={`bg-white dark:bg-gray-900 rounded-2xl border ${dept.border} dark:border-gray-700 shadow-sm overflow-hidden cursor-pointer`}
         onClick={() => setOpen(o => !o)}
       >
-        <div className={`${dept.bg} p-5 flex items-center gap-4`}>
+        <div className={`${dept.bg} dark:bg-gray-800 p-5 flex items-center gap-4`}>
           <div className={`w-12 h-12 bg-gradient-to-br ${dept.color} rounded-xl flex items-center justify-center text-xl shadow-sm flex-shrink-0`}>
             {dept.emoji}
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`text-xs font-bold uppercase tracking-wider ${dept.text}`}>{dept.short}</p>
-            <h3 className="font-bold text-gray-900 text-sm mt-0.5 truncate">{dept.name}</h3>
+            <p className={`text-xs font-bold uppercase tracking-wider ${dept.text} dark:opacity-80`}>{dept.short}</p>
+            <h3 className="font-bold text-gray-900 dark:text-gray-50 text-sm mt-0.5 truncate">{dept.name}</h3>
           </div>
           <motion.div
             animate={{ rotate: open ? 45 : 0 }}
             transition={{ duration: 0.2 }}
-            className={`w-7 h-7 flex-shrink-0 bg-white ${dept.text} border ${dept.border} rounded-full flex items-center justify-center font-bold text-lg`}
+            className={`w-7 h-7 flex-shrink-0 bg-white dark:bg-gray-700 ${dept.text} dark:opacity-80 border ${dept.border} dark:border-gray-600 rounded-full flex items-center justify-center font-bold text-lg`}
           >
             +
           </motion.div>
@@ -131,11 +131,11 @@ function DeptCard({ dept, index }: { dept: typeof departments[0]; index: number 
           transition={{ duration: 0.3 }}
           className="overflow-hidden"
         >
-          <div className="px-5 py-5 border-t border-gray-100">
-            <p className="text-gray-600 text-sm leading-relaxed mb-4">{dept.desc}</p>
+          <div className="px-5 py-5 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4">{dept.desc}</p>
             <div className="flex flex-wrap gap-2">
               {dept.keywords.map(k => (
-                <span key={k} className={`text-xs font-medium px-2.5 py-1 rounded-full ${dept.bg} ${dept.text} border ${dept.border}`}>
+                <span key={k} className={`text-xs font-medium px-2.5 py-1 rounded-full ${dept.bg} dark:bg-gray-800 ${dept.text} dark:opacity-80 border ${dept.border} dark:border-gray-700`}>
                   {k}
                 </span>
               ))}
@@ -170,10 +170,10 @@ export default function Lesson5Departments() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6"
+        className="bg-indigo-50 dark:bg-indigo-950 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-6"
       >
-        <p className="text-indigo-800 font-semibold text-sm mb-1">🏢 How We're Organized</p>
-        <p className="text-indigo-700 text-[15px] leading-relaxed">
+        <p className="text-indigo-800 dark:text-indigo-300 font-semibold text-sm mb-1">🏢 How We're Organized</p>
+        <p className="text-indigo-700 dark:text-indigo-300 text-[15px] leading-relaxed">
           AMRYTT MEDIA is organized into <strong>8 key departments</strong> that work together to deliver exceptional digital marketing solutions. Each department has a distinct role, but all of us work as one team.
         </p>
       </motion.div>
@@ -187,9 +187,9 @@ export default function Lesson5Departments() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.08 }}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center"
+            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 text-center"
           >
-            <p className="font-bold text-gray-900 text-sm">{stat}</p>
+            <p className="font-bold text-gray-900 dark:text-gray-50 text-sm">{stat}</p>
           </motion.div>
         ))}
       </div>
@@ -202,8 +202,8 @@ export default function Lesson5Departments() {
           viewport={{ once: true }}
           className="mb-4"
         >
-          <h2 className="text-xl font-bold text-gray-900">The 8 Departments</h2>
-          <p className="text-gray-500 text-sm mt-1">✨ Tap each department card to learn what they do.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">The 8 Departments</h2>
+          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">✨ Tap each department card to learn what they do.</p>
         </motion.div>
         <div className="space-y-3">
           {departments.map((dept, i) => (

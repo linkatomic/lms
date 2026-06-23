@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, ChevronRight, Rocket } from 'lucide-react'
 import LogoutButton from '@/components/LogoutButton'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -12,18 +13,19 @@ export default async function DashboardPage() {
   const firstName = user.email?.split('@')[0] ?? 'there'
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Nav */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+      <nav className="bg-white dark:bg-gray-900 shadow-sm border-b border-gray-200 dark:border-gray-800">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
               <BookOpen className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-gray-900">Team Learning Hub</span>
+            <span className="font-bold text-gray-900 dark:text-gray-50">Team Learning Hub</span>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-500 hidden sm:block">{user.email}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500 dark:text-gray-400 hidden sm:block">{user.email}</span>
+            <ThemeToggle />
             <LogoutButton />
           </div>
         </div>
@@ -32,8 +34,8 @@ export default async function DashboardPage() {
       <main className="max-w-5xl mx-auto px-4 py-10">
         {/* Welcome */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome, {firstName}! 👋</h1>
-          <p className="text-gray-500 mt-1">Ready to learn? Pick up where you left off.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Welcome, {firstName}! 👋</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Ready to learn? Pick up where you left off.</p>
         </div>
 
         {/* Course card */}
@@ -81,7 +83,7 @@ export default async function DashboardPage() {
 
         {/* Quick links to lessons */}
         <div className="mt-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Module 1 — Start Here</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-gray-50 mb-4">Module 1 — Start Here</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
               { id: 1, title: 'History & Overview', emoji: '🏢' },
@@ -93,14 +95,14 @@ export default async function DashboardPage() {
               <Link
                 key={lesson.id}
                 href={`/course/lesson/${lesson.id}`}
-                className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:border-indigo-200 hover:shadow-md transition group"
+                className="flex items-center gap-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 hover:border-indigo-200 dark:hover:border-indigo-700 hover:shadow-md transition group"
               >
                 <span className="text-2xl">{lesson.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 text-sm truncate">{lesson.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">Lesson {lesson.id}</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-50 text-sm truncate">{lesson.title}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Lesson {lesson.id}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 transition flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-indigo-500 transition flex-shrink-0" />
               </Link>
             ))}
           </div>

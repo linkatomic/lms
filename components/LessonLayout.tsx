@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, BookOpen, CheckCircle2 } from 'lucide-react'
 import { COURSE } from '@/lib/course-data'
+import ThemeToggle from '@/components/ThemeToggle'
 
 interface LessonLayoutProps {
   moduleId: number
@@ -22,27 +23,30 @@ export default function LessonLayout({ moduleId, lessonId, children }: LessonLay
   const progress = Math.round(((currentIndex + 1) / lessons.length) * 100)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Top nav */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/course" className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition text-sm">
+            <Link href="/course" className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition text-sm">
               <ChevronLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Back to course</span>
             </Link>
-            <span className="text-gray-300">|</span>
+            <span className="text-gray-300 dark:text-gray-700">|</span>
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-indigo-600" />
-              <span className="text-sm font-medium text-gray-700 hidden sm:block">{mod.title}</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">{mod.title}</span>
             </div>
           </div>
-          <div className="text-sm text-gray-500">
-            {currentIndex + 1} / {lessons.length}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {currentIndex + 1} / {lessons.length}
+            </span>
+            <ThemeToggle />
           </div>
         </div>
         {/* Progress bar */}
-        <div className="h-1 bg-gray-100">
+        <div className="h-1 bg-gray-100 dark:bg-gray-800">
           <div
             className="h-1 bg-indigo-500 transition-all duration-500"
             style={{ width: `${progress}%` }}
@@ -51,9 +55,9 @@ export default function LessonLayout({ moduleId, lessonId, children }: LessonLay
       </nav>
 
       {/* Lesson title header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-2 text-xs text-indigo-600 font-medium uppercase tracking-wide mb-2">
+          <div className="flex items-center gap-2 text-xs text-indigo-600 dark:text-indigo-400 font-medium uppercase tracking-wide mb-2">
             <span>Lesson {currentIndex + 1}</span>
             {currentLesson.duration && (
               <>
@@ -62,7 +66,7 @@ export default function LessonLayout({ moduleId, lessonId, children }: LessonLay
               </>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{currentLesson.title}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-50">{currentLesson.title}</h1>
         </div>
       </div>
 
@@ -73,11 +77,11 @@ export default function LessonLayout({ moduleId, lessonId, children }: LessonLay
 
       {/* Bottom navigation */}
       <div className="max-w-4xl mx-auto px-4 pb-16">
-        <div className="flex items-center justify-between pt-8 border-t border-gray-200">
+        <div className="flex items-center justify-between pt-8 border-t border-gray-200 dark:border-gray-800">
           {prevLesson ? (
             <Link
               href={`/course/lesson/${prevLesson.id}`}
-              className="flex items-center gap-2 text-gray-600 hover:text-indigo-600 transition font-medium"
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition font-medium"
             >
               <ChevronLeft className="w-5 h-5" />
               <span className="text-sm">{prevLesson.title}</span>
