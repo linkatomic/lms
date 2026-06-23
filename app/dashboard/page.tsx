@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BookOpen, ChevronRight, Rocket } from 'lucide-react'
+import { BookOpen, ChevronRight, Rocket, Shield } from 'lucide-react'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 
@@ -10,7 +10,9 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const firstName = user.email?.split('@')[0] ?? 'there'
+  const { data: profile } = await supabase.from('profiles').select('role, display_name').eq('id', user.id).single()
+  const isAdmin = profile?.role === 'admin'
+  const firstName = profile?.display_name?.split(' ')[0] ?? user.email?.split('@')[0] ?? 'there'
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -80,6 +82,22 @@ export default async function DashboardPage() {
             </div>
           </div>
         </Link>
+
+        {/* Admin panel link — only visible to admins */}
+        {isAdmin && (
+          <Link href="/admin" className="block group mt-6">
+            <div className="flex items-center gap-4 bg-white dark:bg-gray-900 rounded-2xl border border-violet-100 dark:border-violet-900 shadow-sm p-5 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition">
+              <div className="w-10 h-10 bg-violet-50 dark:bg-violet-950 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900 dark:text-gray-50 text-sm">Admin Panel</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Create and manage team member accounts</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-300 dark:text-gray-600 group-hover:text-violet-500 transition flex-shrink-0" />
+            </div>
+          </Link>
+        )}
 
         {/* Quick links to lessons */}
         <div className="mt-8">
