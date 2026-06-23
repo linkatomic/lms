@@ -1,0 +1,107 @@
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { BookOpen, Clock, ChevronRight, Lock } from 'lucide-react'
+import { COURSE } from '@/lib/course-data'
+import LogoutButton from '@/components/LogoutButton'
+
+export default async function CoursePage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Nav */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+              <BookOpen className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-gray-900 hidden sm:block">Team Learning Hub</span>
+          </Link>
+          <LogoutButton />
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-700">
+        <div className="max-w-4xl mx-auto px-4 py-12 sm:py-16 text-white">
+          <p className="text-indigo-200 text-sm font-semibold uppercase tracking-widest mb-3">Your Training Course</p>
+          <h1 className="text-3xl sm:text-5xl font-bold mb-4">{COURSE.title}</h1>
+          <p className="text-indigo-100 text-lg max-w-xl">{COURSE.description}</p>
+          <div className="mt-6 flex items-center gap-6 text-sm text-indigo-200">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              <span>3 Modules</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>Self-paced</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modules */}
+      <main className="max-w-4xl mx-auto px-4 py-10 space-y-6">
+        <h2 className="text-xl font-bold text-gray-900">Course Modules</h2>
+
+        {COURSE.modules.map((mod, modIndex) => (
+          <div key={mod.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            {/* Module header */}
+            <div className={`bg-gradient-to-r ${mod.color} p-6 text-white`}>
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">{mod.emoji}</span>
+                <div>
+                  <p className="text-white/70 text-xs font-semibold uppercase tracking-widest">Module {mod.id}</p>
+                  <h3 className="font-bold text-lg leading-snug">{mod.title}</h3>
+                </div>
+                {modIndex > 0 && (
+                  <div className="ml-auto flex items-center gap-1 bg-white/20 text-white/80 text-xs px-3 py-1.5 rounded-full">
+                    <Lock className="w-3 h-3" />
+                    Coming Soon
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Lessons list */}
+            <div className="divide-y divide-gray-50">
+              {mod.lessons.map((lesson, i) => (
+                modIndex === 0 ? (
+                  <Link
+                    key={lesson.id}
+                    href={`/course/lesson/${lesson.id}`}
+                    className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition group"
+                  >
+                    <div className={`w-8 h-8 ${mod.lightColor} rounded-lg flex items-center justify-center text-sm font-bold ${mod.borderColor} border flex-shrink-0`}>
+                      {'isQuiz' in lesson && lesson.isQuiz ? '📝' : i + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm truncate">{lesson.title}</p>
+                      {lesson.duration && <p className="text-xs text-gray-400 mt-0.5">{lesson.duration}</p>}
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 transition flex-shrink-0" />
+                  </Link>
+                ) : (
+                  <div key={lesson.id} className="flex items-center gap-4 px-6 py-4 opacity-50">
+                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-sm font-bold border border-gray-200 flex-shrink-0">
+                      {i + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-500 text-sm truncate">{lesson.title}</p>
+                      {lesson.duration && <p className="text-xs text-gray-300 mt-0.5">{lesson.duration}</p>}
+                    </div>
+                    <Lock className="w-4 h-4 text-gray-300 flex-shrink-0" />
+                  </div>
+                )
+              ))}
+            </div>
+          </div>
+        ))}
+      </main>
+    </div>
+  )
+}

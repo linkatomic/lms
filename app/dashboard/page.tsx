@@ -1,25 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { BookOpen, ChevronRight, Rocket } from 'lucide-react'
 import LogoutButton from '@/components/LogoutButton'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  if (!user) {
-    redirect('/login')
-  }
+  const firstName = user.email?.split('@')[0] ?? 'there'
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top navigation bar */}
+      {/* Nav */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+              <BookOpen className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-gray-900">Team Learning Hub</span>
           </div>
@@ -30,34 +29,81 @@ export default async function DashboardPage() {
         </div>
       </nav>
 
-      {/* Main content */}
       <main className="max-w-5xl mx-auto px-4 py-10">
+        {/* Welcome */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back! 👋</h1>
-          <p className="text-gray-500 mt-1">Here's your learning dashboard.</p>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome, {firstName}! 👋</h1>
+          <p className="text-gray-500 mt-1">Ready to learn? Pick up where you left off.</p>
         </div>
 
-        {/* Placeholder cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="text-3xl font-bold text-indigo-600">0</div>
-            <div className="text-sm text-gray-500 mt-1">Courses Enrolled</div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="text-3xl font-bold text-green-600">0</div>
-            <div className="text-sm text-gray-500 mt-1">Courses Completed</div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div className="text-3xl font-bold text-orange-500">0</div>
-            <div className="text-sm text-gray-500 mt-1">In Progress</div>
-          </div>
-        </div>
+        {/* Course card */}
+        <Link href="/course" className="block group">
+          <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-blue-600 to-violet-700 rounded-3xl p-8 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute top-4 right-4 w-48 h-48 rounded-full bg-white blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 rounded-full bg-white blur-2xl" />
+            </div>
+            <div className="relative">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-indigo-200 text-xs font-semibold uppercase tracking-widest mb-2">Your Current Course</p>
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-3">Let's Create Foundation!</h2>
+                  <p className="text-indigo-100 text-sm max-w-sm leading-relaxed">
+                    Everything a new AMRYTT MEDIA team member needs to hit the ground running.
+                  </p>
+                </div>
+                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 ml-4 group-hover:scale-110 transition-transform">
+                  <Rocket className="w-7 h-7 text-white" />
+                </div>
+              </div>
 
-        {/* Coming soon */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-          <div className="text-4xl mb-3">🚀</div>
-          <h2 className="text-lg font-semibold text-gray-800">Courses coming soon</h2>
-          <p className="text-gray-500 text-sm mt-2">Your training modules will appear here once they're set up.</p>
+              <div className="mt-6 flex items-center gap-4">
+                <div className="flex-1 bg-white/20 rounded-full h-2">
+                  <div className="bg-white rounded-full h-2 w-0" />
+                </div>
+                <span className="text-white/80 text-xs font-medium">0% complete</span>
+              </div>
+
+              <div className="mt-5 flex items-center justify-between">
+                <div className="flex gap-4 text-sm text-indigo-200">
+                  <span>3 Modules</span>
+                  <span>·</span>
+                  <span>27 Lessons</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-white text-indigo-700 font-semibold text-sm px-4 py-2 rounded-xl group-hover:bg-indigo-50 transition">
+                  Start Learning
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+
+        {/* Quick links to lessons */}
+        <div className="mt-8">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Module 1 — Start Here</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { id: 1, title: 'History & Overview', emoji: '🏢' },
+              { id: 2, title: 'Vision, Mission & Core Values', emoji: '🎯' },
+              { id: 3, title: 'Goals & Objectives', emoji: '📈' },
+              { id: 4, title: 'AMRYTT MEDIA Philosophy', emoji: '💡' },
+              { id: 5, title: 'Key Departments', emoji: '👥' },
+            ].map(lesson => (
+              <Link
+                key={lesson.id}
+                href={`/course/lesson/${lesson.id}`}
+                className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 shadow-sm p-4 hover:border-indigo-200 hover:shadow-md transition group"
+              >
+                <span className="text-2xl">{lesson.emoji}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 text-sm truncate">{lesson.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Lesson {lesson.id}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 transition flex-shrink-0" />
+              </Link>
+            ))}
+          </div>
         </div>
       </main>
     </div>
