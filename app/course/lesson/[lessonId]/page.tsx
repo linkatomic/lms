@@ -14,6 +14,7 @@ import Lesson10Quiz from '@/components/lessons/Lesson10Quiz'
 import Lesson11KeyTerminologies from '@/components/lessons/Lesson11KeyTerminologies'
 import Lesson12Quiz from '@/components/lessons/Lesson12Quiz'
 import Lesson13KeyTerminologies from '@/components/lessons/Lesson13KeyTerminologies'
+import Lesson14Quiz from '@/components/lessons/Lesson14Quiz'
 
 const LESSON_COMPONENTS: Record<number, React.ComponentType> = {
   1: Lesson1HistoryOverview,
@@ -29,11 +30,12 @@ const LESSON_COMPONENTS: Record<number, React.ComponentType> = {
   11: Lesson11KeyTerminologies,
   12: Lesson12Quiz,
   13: Lesson13KeyTerminologies,
+  14: Lesson14Quiz,
 }
 
 const LESSON_MODULE_MAP: Record<number, number> = {
   1: 1, 2: 1, 3: 1, 4: 1, 5: 1,
-  6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2, 13: 2,
+  6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2, 13: 2, 14: 2,
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ lessonId: string }> }) {
