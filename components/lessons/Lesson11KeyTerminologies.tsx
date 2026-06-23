@@ -415,7 +415,7 @@ export default function Lesson11KeyTerminologies() {
         </DefinitionCard>
 
         <ExampleBox>
-          💡 <strong>Think of it like a university degree.</strong> A recommendation letter from Harvard carries more weight than one from an unknown school — even if both say the same thing. A backlink from Wikipedia > a backlink from a random blog.
+          💡 <strong>Think of it like a university degree.</strong> A recommendation letter from Harvard carries more weight than one from an unknown school — even if both say the same thing. A backlink from Wikipedia &gt; a backlink from a random blog.
         </ExampleBox>
 
         <p className="font-bold text-gray-900 dark:text-gray-50 text-sm">Real examples of high-authority sites:</p>
