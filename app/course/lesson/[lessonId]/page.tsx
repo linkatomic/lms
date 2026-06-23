@@ -9,6 +9,7 @@ import Lesson5Departments from '@/components/lessons/Lesson5Departments'
 import Lesson6IntroDigitalMarketing from '@/components/lessons/Lesson6IntroDigitalMarketing'
 import Lesson7ImportanceFuture from '@/components/lessons/Lesson7ImportanceFuture'
 import Lesson8ContentMarketing from '@/components/lessons/Lesson8ContentMarketing'
+import Lesson9GuestPosting from '@/components/lessons/Lesson9GuestPosting'
 
 const LESSON_COMPONENTS: Record<number, React.ComponentType> = {
   1: Lesson1HistoryOverview,
@@ -19,11 +20,12 @@ const LESSON_COMPONENTS: Record<number, React.ComponentType> = {
   6: Lesson6IntroDigitalMarketing,
   7: Lesson7ImportanceFuture,
   8: Lesson8ContentMarketing,
+  9: Lesson9GuestPosting,
 }
 
 const LESSON_MODULE_MAP: Record<number, number> = {
   1: 1, 2: 1, 3: 1, 4: 1, 5: 1,
-  6: 2, 7: 2, 8: 2,
+  6: 2, 7: 2, 8: 2, 9: 2,
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ lessonId: string }> }) {
