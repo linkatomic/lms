@@ -2,60 +2,57 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import { Target, Eye, Heart } from 'lucide-react'
+import { Target, Eye, Zap } from 'lucide-react'
 
-const coreValues = [
+const operatingRules = [
   {
-    name: 'Mutual Respect',
-    emoji: '🤝',
-    quote: '"Respect is a two-way street, if you want to get it, you\'ve got to give it."',
-    color: 'from-blue-500 to-indigo-600',
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
+    number: '01',
+    name: 'Fastest Delivery',
+    team: 'Operations Team',
+    emoji: '⚡',
+    tagline: 'Speed matters.',
+    detail: 'If a client places an order, it should move fast and smoothly — no unnecessary delays. Every minute counts when a client is waiting.',
+    color: 'from-indigo-500 to-blue-600',
+    lightBg: 'bg-indigo-50',
+    darkBg: 'dark:bg-indigo-950',
+    border: 'border-indigo-200',
+    darkBorder: 'dark:border-indigo-700',
+    teamColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300',
+    textColor: 'text-indigo-700 dark:text-indigo-300',
   },
   {
-    name: 'Commitment',
-    emoji: '💪',
-    quote: '"Without commitment, you cannot have depth in anything, whether it\'s a relationship, a business, or a hobby."',
+    number: '02',
+    name: 'Quality Content',
+    team: 'Content Team',
+    emoji: '✍️',
+    tagline: 'Backlinks without good content = wasted effort.',
+    detail: 'We focus on creating content that actually deserves to be published — writing that earns its place, builds authority, and delivers real value to readers.',
     color: 'from-violet-500 to-purple-600',
-    bg: 'bg-violet-50',
+    lightBg: 'bg-violet-50',
+    darkBg: 'dark:bg-violet-950',
     border: 'border-violet-200',
+    darkBorder: 'dark:border-violet-700',
+    teamColor: 'bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300',
+    textColor: 'text-violet-700 dark:text-violet-300',
   },
   {
-    name: 'Integrity',
-    emoji: '⭐',
-    quote: '"Real integrity is doing the right thing, knowing that nobody\'s going to know whether you did it or not."',
-    color: 'from-amber-500 to-orange-600',
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-  },
-  {
-    name: 'Openness',
-    emoji: '🌐',
-    quote: '"The more we open ourselves, the more we have within ourselves."',
-    color: 'from-teal-500 to-emerald-600',
-    bg: 'bg-teal-50',
-    border: 'border-teal-200',
-  },
-  {
-    name: 'Teamwork',
-    emoji: '🙌',
-    quote: '"Coming together is a beginning, staying together is progress, and working together is a success."',
-    color: 'from-pink-500 to-rose-600',
-    bg: 'bg-pink-50',
-    border: 'border-pink-200',
-  },
-  {
-    name: 'Customer Experience',
-    emoji: '❤️',
-    quote: '"Customer service should not be a department. It should be the entire company."',
-    color: 'from-red-500 to-pink-600',
-    bg: 'bg-red-50',
-    border: 'border-red-200',
+    number: '03',
+    name: 'Best Pricing',
+    team: 'Outreach Team',
+    emoji: '🎯',
+    tagline: 'Competitive rates. Zero compromise on quality.',
+    detail: 'Get the best possible rates from publishers, then pass that advantage to clients. We stay competitive without ever cutting corners on the quality of placements.',
+    color: 'from-emerald-500 to-teal-600',
+    lightBg: 'bg-emerald-50',
+    darkBg: 'dark:bg-emerald-950',
+    border: 'border-emerald-200',
+    darkBorder: 'dark:border-emerald-700',
+    teamColor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300',
+    textColor: 'text-emerald-700 dark:text-emerald-300',
   },
 ]
 
-function FlipCard({ value, index }: { value: typeof coreValues[0]; index: number }) {
+function RuleCard({ rule, index }: { rule: typeof operatingRules[0]; index: number }) {
   const [flipped, setFlipped] = useState(false)
 
   return (
@@ -64,35 +61,48 @@ function FlipCard({ value, index }: { value: typeof coreValues[0]; index: number
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.08, duration: 0.4 }}
+      transition={{ delay: index * 0.1, duration: 0.45 }}
       className="cursor-pointer"
-      style={{ perspective: 1000 }}
+      style={{ perspective: 1200 }}
       onClick={() => setFlipped(f => !f)}
     >
       <motion.div
         className="relative w-full"
-        style={{ transformStyle: 'preserve-3d', height: 160 }}
+        style={{ transformStyle: 'preserve-3d', height: 220 }}
         animate={{ rotateY: flipped ? 180 : 0 }}
-        transition={{ duration: 0.5, ease: 'easeInOut' }}
+        transition={{ duration: 0.55, ease: 'easeInOut' }}
       >
         {/* Front */}
         <div
-          className={`absolute inset-0 rounded-2xl border ${value.border} dark:border-opacity-40 ${value.bg} dark:bg-opacity-10 dark:bg-gray-800 flex flex-col items-center justify-center p-5 shadow-sm`}
+          className={`absolute inset-0 rounded-2xl border ${rule.border} ${rule.darkBorder} ${rule.lightBg} ${rule.darkBg} shadow-sm flex flex-col justify-between p-6`}
           style={{ backfaceVisibility: 'hidden' }}
         >
-          <span className="text-4xl mb-3">{value.emoji}</span>
-          <p className="font-bold text-gray-800 dark:text-gray-100 text-center text-sm">{value.name}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Tap to reveal quote →</p>
+          <div className="flex items-start justify-between">
+            <span className={`text-xs font-bold uppercase tracking-widest ${rule.textColor}`}>
+              Rule {rule.number}
+            </span>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${rule.teamColor}`}>
+              {rule.team}
+            </span>
+          </div>
+          <div>
+            <span className="text-4xl block mb-3">{rule.emoji}</span>
+            <h3 className="font-bold text-gray-900 dark:text-gray-50 text-lg mb-1">{rule.name}</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-sm italic">{rule.tagline}</p>
+          </div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 text-right">Tap for details →</p>
         </div>
 
         {/* Back */}
         <div
-          className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${value.color} flex items-center justify-center p-5 shadow-sm`}
+          className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${rule.color} shadow-sm flex flex-col justify-center p-6`}
           style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
         >
-          <p className="text-white text-xs leading-relaxed text-center font-medium italic">
-            {value.quote}
-          </p>
+          <span className="text-xs font-bold uppercase tracking-widest text-white/70 mb-4">
+            {rule.team}
+          </span>
+          <h3 className="font-bold text-white text-lg mb-3">{rule.name}</h3>
+          <p className="text-white/90 text-sm leading-relaxed">{rule.detail}</p>
         </div>
       </motion.div>
     </motion.div>
@@ -100,14 +110,14 @@ function FlipCard({ value, index }: { value: typeof coreValues[0]; index: number
 }
 
 const missionPoints = [
-  'Deliver exceptional results meeting every client\'s needs with precision and speed — without compromising on quality.',
+  "Deliver exceptional results meeting every client's needs with precision and speed — without compromising on quality.",
   'Stay ahead of the curve by embracing and shaping the latest industry trends and best practices.',
   'Invest in the growth of our team, creating a collaborative culture that sparks creativity and nurtures leadership.',
   'Forge lasting partnerships with clients, offering personalized, top-tier services with transparent communication.',
 ]
 
 const visionPoints = [
-  'Rise as one of India\'s most recognized and respected leaders in the digital marketing arena.',
+  "Rise as one of India's most recognized and respected leaders in the digital marketing arena.",
   'Strengthen our team with top talent — skilled professionals driven to excel.',
   'Elevate our standards and set new benchmarks, pushing the boundaries of innovation and excellence.',
 ]
@@ -124,7 +134,7 @@ export default function Lesson2VisionMission() {
       >
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-8 translate-x-8 blur-2xl" />
         <p className="text-indigo-200 text-sm font-semibold uppercase tracking-widest mb-3">Lesson 2</p>
-        <h2 className="text-3xl font-bold mb-3">Vision, Mission & Core Values</h2>
+        <h2 className="text-3xl font-bold mb-3">Vision, Mission & How We Operate</h2>
         <p className="text-indigo-100 leading-relaxed max-w-lg">
           These aren't just words on a wall — they're the compass that guides every decision at AMRYTT MEDIA.
         </p>
@@ -192,7 +202,7 @@ export default function Lesson2VisionMission() {
         </div>
       </motion.div>
 
-      {/* Core Values — flip cards */}
+      {/* How We Operate — 3 rule flip cards */}
       <div>
         <motion.div
           initial={{ opacity: 0 }}
@@ -200,22 +210,22 @@ export default function Lesson2VisionMission() {
           viewport={{ once: true }}
           className="flex items-center gap-3 mb-2"
         >
-          <div className="w-10 h-10 bg-pink-100 dark:bg-pink-900 rounded-xl flex items-center justify-center">
-            <Heart className="w-5 h-5 text-pink-600 dark:text-pink-400" />
+          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-xl flex items-center justify-center">
+            <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">Our Core Values</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-50">How We Operate</h2>
         </motion.div>
         <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="text-gray-500 text-sm mb-5 ml-13"
+          className="text-gray-500 dark:text-gray-400 text-sm mb-5 ml-13"
         >
-          ✨ <strong>Tap each card</strong> to reveal the guiding quote behind every value.
+          Think of these as our operating rules — not just words. ✨ <strong>Tap each card</strong> to see what it means in practice.
         </motion.p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          {coreValues.map((value, i) => (
-            <FlipCard key={value.name} value={value} index={i} />
+        <div className="grid sm:grid-cols-3 gap-4">
+          {operatingRules.map((rule, i) => (
+            <RuleCard key={rule.number} rule={rule} index={i} />
           ))}
         </div>
       </div>
@@ -229,7 +239,7 @@ export default function Lesson2VisionMission() {
       >
         <p className="text-lg font-bold text-gray-900 dark:text-gray-50 mb-2">🎯 Key Takeaway</p>
         <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-          At AMRYTT MEDIA, our Mission is our <em>daily commitment</em>, our Vision is our <em>north star</em>, and our Core Values are the <em>rules we live by</em>. Every decision — big or small — is filtered through these principles.
+          At AMRYTT MEDIA, our Mission is our <em>daily commitment</em>, our Vision is our <em>north star</em>, and our Operating Rules are what we <em>actually live by</em> every single day — speed, quality, and value for every client.
         </p>
       </motion.div>
 
