@@ -1,658 +1,818 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
 import {
-  CheckCircle2, XCircle, Clock, AlertTriangle,
-  ChevronRight, RotateCcw, Trophy, BookOpen, Eye, EyeOff,
+  AlertTriangle, CheckCircle2, XCircle, ChevronLeft,
+  ChevronRight, RotateCcw, Clock, BookOpen, Send,
 } from 'lucide-react'
 
 // ─────────────────────────────────────
 // Constants
 // ─────────────────────────────────────
-const TOTAL_TIME      = 15 * 60   // 900 seconds
+const TOTAL_TIME = 15 * 60   // 15 minutes for 20 questions
 const MAX_TAB_SWITCHES = 3
 
-type Phase = 'intro' | 'quiz' | 'result'
+type Phase = 'intro' | 'quiz' | 'results'
 
 interface MCQ {
   id: number
-  question: string
-  options: [string, string, string]
-  correct: 0 | 1 | 2
+  text: string
+  options: string[]
+  correct: number
   explanation: string
 }
 
+const fmt = (s: number) =>
+  `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
+
 // ─────────────────────────────────────
-// Questions  (7A / 7B / 6C)
+// Questions  (A=0, B=1, C=2)
+// Answer spread: A×7, B×7, C×6 — balanced
+// Covers all 20 terms from Lesson 23 (Key Terminologies-7):
+// Sidebar Links, Search Algorithm, Search Intent, Search Results, Search Term,
+// Search Visibility, Secondary Keywords, Short-Tail Keywords, Sponsored Post,
+// Sponsored Tag, Site Speed, Trust Flow, Traffic, UGC Link Attribute,
+// URL Slug, Webpage, Website Navigation, White Hat SEO, Word Count, Web Address
 // ─────────────────────────────────────
-const QUESTIONS: MCQ[] = [
+const questions: MCQ[] = [
+  // Q1 — Traffic (definition) — correct: B (1)
   {
     id: 1,
-    question: 'In web analytics, what does "traffic" specifically refer to?',
+    text: "In web analytics, what does 'traffic' specifically refer to?",
     options: [
-      'The number of pages a visitor views per session',
-      'The amount of data sent and received by visitors to a website',
-      'The speed at which a website loads for visitors',
+      "The number of pages a visitor views per session on a website",
+      "The amount of data sent and received by visitors to a website",
+      "The speed at which a website loads for its visitors",
     ],
     correct: 1,
-    explanation: 'Traffic is the amount of data sent and received by visitors to a website — it represents how many people visit and how much they interact with the site.',
+    explanation: "Traffic is the amount of data sent and received by visitors to a website — it represents how many people visit and how much they interact with the site. Page views per session and loading speed are separate metrics.",
   },
+
+  // Q2 — Sidebar Links (location) — correct: B (1)
   {
     id: 2,
-    question: 'Where are sidebar links typically located on a webpage?',
+    text: "Where are sidebar links typically located on a webpage?",
     options: [
-      'Embedded within the main body paragraphs of the page',
-      'In a vertical column on the left or right side of a webpage',
-      'At the bottom of the page inside the footer section',
+      "Embedded within the main body paragraphs of the page",
+      "In a vertical column on the left or right side of a webpage",
+      "At the bottom of the page inside the footer section",
     ],
     correct: 1,
-    explanation: 'Sidebar links sit in a vertical column on the left or right side of a webpage, providing quick access to related pages or categories without interrupting the main content.',
+    explanation: "Sidebar links sit in a vertical column on the left or right side of a webpage, providing quick access to related pages or categories without interrupting the main content flow.",
   },
+
+  // Q3 — Search Algorithm (NOT a ranking factor — tricky) — correct: C (2)
   {
     id: 3,
-    question: 'Which of the following is NOT considered a ranking factor by Google\'s search algorithm?',
+    text: "Which of the following is NOT considered a ranking factor by Google's search algorithm?",
     options: [
-      'Page speed and loading time',
-      'Quality and quantity of backlinks',
-      'The color scheme and font choice used on the website',
+      "Page speed and loading time",
+      "Quality and quantity of backlinks",
+      "The colour scheme and font choice used on the website",
     ],
     correct: 2,
-    explanation: 'Google\'s search algorithm evaluates hundreds of factors — including page speed and backlink quality — but visual design choices like color schemes and fonts are not ranking signals.',
+    explanation: "Google's algorithm evaluates hundreds of signals — including page speed and backlink quality — but visual design choices like colour schemes and fonts are not ranking factors. Content relevance and technical performance are what the algorithm measures.",
   },
+
+  // Q4 — Search Intent (commercial vs transactional — tricky) — correct: C (2)
   {
     id: 4,
-    question: 'A user searches "best noise-cancelling headphones 2024." What type of search intent does this query most likely represent?',
+    text: "A user searches 'best noise-cancelling headphones 2024.' What type of search intent does this most likely represent?",
     options: [
-      'Navigational — the user wants to reach a specific brand\'s website',
-      'Transactional — the user is ready to make a purchase immediately',
-      'Commercial investigation — the user is researching before making a purchase decision',
+      "Navigational — the user wants to reach a specific brand's website",
+      "Transactional — the user is ready to make a purchase immediately",
+      "Commercial investigation — the user is researching before making a purchase decision",
     ],
     correct: 2,
-    explanation: '"Best [product] [year]" queries signal commercial investigation intent. The user is comparing options before buying, not ready to purchase yet (transactional) and not looking for a specific site (navigational).',
+    explanation: "'Best [product] [year]' queries signal commercial investigation intent. The user is comparing options before buying — not yet at the point of purchase (transactional) and not looking for a specific website (navigational).",
   },
+
+  // Q5 — SERP (definition) — correct: B (1)
   {
     id: 5,
-    question: 'What is a Search Engine Results Page (SERP)?',
+    text: "What is a Search Engine Results Page (SERP)?",
     options: [
-      'A backend database where search engines store all indexed web pages',
-      'The list of web pages a search engine displays in response to a specific query',
-      'A report generated by an SEO tool showing your website\'s keyword rankings',
+      "A backend database where search engines store all indexed web pages",
+      "The list of web pages a search engine displays in response to a specific query",
+      "A report generated by an SEO tool showing your website's keyword rankings",
     ],
     correct: 1,
-    explanation: 'A SERP is the list of results — organic listings, paid ads, featured snippets, local packs — that a search engine shows when a user submits a query.',
+    explanation: "A SERP is the list of results — organic listings, paid ads, featured snippets, local packs — that a search engine shows after a user submits a query. It is not a database or an analytics report.",
   },
+
+  // Q6 — Sponsored Post (disclosure label) — correct: B (1)
   {
     id: 6,
-    question: 'Which of the following labels is commonly found in a sponsored blog post to indicate paid content?',
+    text: "Which of the following labels is commonly found in a sponsored blog post to indicate paid content?",
     options: [
       '"Written by an expert contributor"',
       '"Presented by"',
       '"Editor\'s Pick"',
     ],
     correct: 1,
-    explanation: 'Sponsored posts use disclosure labels like "Presented by," "Sponsored by," "Paid post," "Partnered with," or "Powered by" to comply with FTC guidelines on advertising transparency.',
+    explanation: "Sponsored posts use disclosure labels such as 'Presented by,' 'Sponsored by,' 'Paid post,' 'Partnered with,' or 'Powered by' — required by FTC guidelines to maintain transparency. 'Editor\'s Pick' and contributor credits are editorial, not advertising disclosures.",
   },
+
+  // Q7 — Sponsored Tag (rel="sponsored" — tricky) — correct: C (2)
   {
     id: 7,
-    question: 'When a link uses the rel="sponsored" attribute, what does this tell search engines?',
+    text: "When a hyperlink uses the rel=\"sponsored\" attribute, what does this tell search engines?",
     options: [
-      'The link should be followed and will pass full SEO link equity to the destination page',
-      'The linked page should be removed from the search index entirely',
-      'The link is part of a paid promotion and will not pass SEO link equity (PageRank)',
+      "The link should be followed and will pass full SEO link equity to the destination page",
+      "The linked page should be removed from the search index entirely",
+      "The link is part of a paid promotion and will not pass SEO link equity (PageRank)",
     ],
     correct: 2,
-    explanation: 'rel="sponsored" signals to search engines that a link exists due to a paid promotion. As a result, they do not pass PageRank (link equity) through it — preventing manipulation of search rankings.',
+    explanation: "rel=\"sponsored\" signals to search engines that the link exists due to a paid promotion. As a result, PageRank is not passed through it — preventing manipulation of rankings. It does not cause deindexing (that is the noindex tag).",
   },
+
+  // Q8 — Webpage (definition) — correct: A (0)
   {
     id: 8,
-    question: 'Which of the following BEST describes a webpage?',
+    text: "Which of the following BEST describes a webpage?",
     options: [
-      'A document or information resource suitable for the World Wide Web, accessible through a web browser',
-      'A website\'s navigation menu structure and internal link architecture',
-      'The URL slug that appears at the end of a website\'s address',
+      "A document or information resource suitable for the World Wide Web, accessible through a web browser",
+      "A website's navigation menu structure and internal link architecture",
+      "The URL slug that appears at the end of a website's address",
     ],
     correct: 0,
-    explanation: 'A webpage is a single document or information resource designed for the World Wide Web — it contains text, images, links, and other media, and is accessed via its unique URL in a web browser.',
+    explanation: "A webpage is a single document or information resource designed for the World Wide Web — containing text, images, links, and other media — accessed via its unique URL in a browser. Navigation menus and URL slugs are components of a site, not the definition of a webpage.",
   },
+
+  // Q9 — Search Term / Query (definition) — correct: B (1)
   {
     id: 9,
-    question: 'What is a "search term" or "search query" in SEO?',
+    text: "What is a 'search term' or 'search query' in SEO?",
     options: [
-      'The title tag of a webpage that search engines use to identify it in results',
-      'The word or phrase a user types into a search engine to find information',
-      'The URL of a webpage submitted to a search engine for indexing',
+      "The title tag of a webpage that search engines use to identify it in results",
+      "The word or phrase a user types into a search engine to find information",
+      "The URL of a webpage submitted to a search engine for indexing",
     ],
     correct: 1,
-    explanation: 'A search term (or query) is what a user types into a search bar — for example, "best laptops of 2024." Understanding what your audience searches for is the foundation of keyword research.',
+    explanation: "A search term is what a user types into a search bar — for example, 'best laptops 2024.' Understanding what your audience searches for is the foundation of keyword research. Title tags and submitted URLs are different SEO concepts.",
   },
+
+  // Q10 — Secondary Keywords (example) — correct: A (0)
   {
     id: 10,
-    question: 'If "Italian restaurants" is the primary keyword, which of the following would be considered a secondary keyword?',
+    text: "If 'Italian restaurants' is the primary keyword, which of the following would be considered a secondary keyword?",
     options: [
-      'Pizza',
-      'Dog food',
-      'Running shoes',
+      "Pizza",
+      "Dog food",
+      "Running shoes",
     ],
     correct: 0,
-    explanation: '"Pizza" is a secondary keyword because it is directly related to Italian restaurants. Secondary keywords (like "pasta," "Italian cuisine," "carbonara") support the primary keyword and help search engines understand the full topic.',
+    explanation: "'Pizza' is a secondary keyword because it is directly related to Italian restaurants. Secondary keywords (like 'pasta,' 'Italian cuisine,' 'carbonara') support the primary keyword and help search engines understand the full topic of the content.",
   },
+
+  // Q11 — Trust Flow (definition) — correct: A (0)
   {
     id: 11,
-    question: 'What does "Trust Flow" measure in SEO?',
+    text: "What does 'Trust Flow' measure in SEO?",
     options: [
-      'The level of confidence search engines have in a website, influenced by content quality and the quality of backlinks pointing to it',
-      'The speed at which pages on your website load in a user\'s browser',
-      'The total number of backlinks pointing to your website, regardless of their quality',
+      "The level of confidence search engines have in a website, influenced by content quality and the quality of its backlinks",
+      "The speed at which pages on a website load in a user's browser",
+      "The total number of backlinks pointing to a website, regardless of their quality",
     ],
     correct: 0,
-    explanation: 'Trust Flow measures how much confidence search engines have in your website. It is built through high-quality content and earning backlinks from trusted, authoritative sources — not just any backlinks.',
+    explanation: "Trust Flow measures how much confidence search engines have in your website. It is built through high-quality content and backlinks from trusted, authoritative sources — not just any backlinks. Site speed and raw backlink count are separate metrics.",
   },
+
+  // Q12 — Search Visibility (importance — deeper understanding) — correct: C (2)
   {
     id: 12,
-    question: 'Why is improving "search visibility" important for a website?',
+    text: "Why is improving 'search visibility' important for a website?",
     options: [
-      'It directly increases the number of backlinks pointing to a website',
-      'It guarantees that a website\'s pages will be indexed by Google within 24 hours',
-      'It determines how often a website appears for its target keywords, directly impacting organic traffic',
+      "It directly increases the number of backlinks pointing to a website",
+      "It guarantees that a website's pages will be indexed by Google within 24 hours",
+      "It determines how often a website appears for its target keywords, directly impacting organic traffic",
     ],
     correct: 2,
-    explanation: 'Search visibility measures how frequently your site appears in results for target keywords. A higher score means more organic traffic — making it a core indicator of overall SEO performance.',
+    explanation: "Search visibility measures how frequently your site appears in results for target keywords. A higher score means more organic traffic — making it a core indicator of overall SEO performance. It does not create backlinks or guarantee indexing timelines.",
   },
+
+  // Q13 — Site Speed (ranking factor) — correct: A (0)
   {
     id: 13,
-    question: 'How does site speed impact a website\'s performance in search engines?',
+    text: "How does site speed impact a website's performance in search engines?",
     options: [
-      'Google has confirmed page speed as a ranking factor, so slow sites may rank lower than faster competitors',
-      'Site speed only affects user experience and has no influence on search engine rankings',
-      'Faster websites are penalised by Google because they may load before content is fully optimised',
+      "Google has confirmed page speed as a ranking factor, so slow sites may rank lower than faster competitors",
+      "Site speed only affects user experience and has no influence on search engine rankings",
+      "Faster websites are penalised by Google because they may load before content is fully optimised",
     ],
     correct: 0,
-    explanation: 'Google officially confirmed page speed as a ranking factor. A faster site improves both user experience and search rankings, while a slow site risks ranking lower — and Google\'s PageSpeed Insights tool helps identify improvements.',
+    explanation: "Google officially confirmed page speed as a ranking factor. Slow sites risk ranking lower — and Google's PageSpeed Insights tool helps identify improvements. Page speed affects both user experience AND search rankings, and faster loading is always beneficial.",
   },
+
+  // Q14 — Word Count (Google Docs shortcut — specific/tricky) — correct: B (1)
   {
     id: 14,
-    question: 'What keyboard shortcut opens the word count window in Google Docs?',
+    text: "What keyboard shortcut opens the word count window in Google Docs?",
     options: [
-      'Ctrl + Alt + Delete',
-      'Ctrl + Shift + C',
-      'Ctrl + Shift + T',
+      "Ctrl + Alt + Delete",
+      "Ctrl + Shift + C",
+      "Ctrl + Shift + T",
     ],
     correct: 1,
-    explanation: 'Pressing Ctrl + Shift + C in Google Docs opens the word count window, which shows the total word count, page count, character count (with and without spaces), and character count excluding spaces.',
+    explanation: "Ctrl + Shift + C opens the word count window in Google Docs, showing total words, pages, characters, and characters excluding spaces. Ctrl + Alt + Delete restarts a computer, and Ctrl + Shift + T reopens closed browser tabs.",
   },
+
+  // Q15 — Web Address (URL components) — correct: A (0)
   {
     id: 15,
-    question: 'Which of the following correctly describes the components of a web address (URL)?',
+    text: "Which of the following correctly describes the components of a web address (URL)?",
     options: [
-      'A protocol (e.g., https://), a domain name, and a path to the specific resource or page',
-      'An email address combined with a domain name and a password',
-      'Only the domain name of the website',
+      "A protocol (e.g., https://), a domain name, and a path to the specific resource or page",
+      "An email address combined with a domain name and a password",
+      "Only the domain name of the website",
     ],
     correct: 0,
-    explanation: 'A full web address includes: a protocol (https://), a domain name (example.com), and a path identifying the specific page (/blog/what-is-seo). Together these uniquely locate any resource on the internet.',
+    explanation: "A complete web address includes: a protocol (https://), a domain name (example.com), and a path identifying the specific page (/blog/what-is-seo). Together these uniquely locate any resource on the internet. Email and passwords are never part of a URL.",
   },
+
+  // Q16 — White Hat vs Black Hat SEO (key difference) — correct: A (0)
   {
     id: 16,
-    question: 'What is the key difference between White Hat SEO and Black Hat SEO?',
+    text: "What is the key difference between White Hat SEO and Black Hat SEO?",
     options: [
-      'White Hat SEO follows Google\'s guidelines and provides genuine value to users; Black Hat SEO violates them using deceptive tactics',
-      'White Hat SEO is a premium paid service while Black Hat SEO is free to implement',
-      'Black Hat SEO improves user experience while White Hat SEO prioritises search engines over users',
+      "White Hat SEO follows Google's guidelines and provides genuine value to users; Black Hat SEO violates them using deceptive tactics",
+      "White Hat SEO is a premium paid service while Black Hat SEO is free to implement",
+      "Black Hat SEO improves user experience while White Hat SEO prioritises search engines over users",
     ],
     correct: 0,
-    explanation: 'White Hat SEO uses ethical tactics (quality content, genuine backlinks, technical optimisation) that align with Google\'s guidelines. Black Hat SEO (keyword stuffing, buying links, PBNs, cloaking) violates the rules and risks heavy penalties.',
+    explanation: "White Hat SEO uses ethical tactics (quality content, genuine backlinks, technical optimisation) that align with Google's guidelines. Black Hat SEO (keyword stuffing, buying links, PBNs, cloaking) violates the rules and risks heavy penalties.",
   },
+
+  // Q17 — UGC Link Attribute (definition) — correct: B (1)
   {
     id: 17,
-    question: 'What does the rel="ugc" link attribute tell search engines about a hyperlink?',
+    text: "What does the rel=\"ugc\" link attribute tell search engines about a hyperlink?",
     options: [
-      'The link is a sponsored advertisement placed by the website owner',
-      'The link was created by a user (e.g., in a comment or forum post), not by the website owner',
-      'The link leads to an official social media profile verified by the platform',
+      "The link is a sponsored advertisement placed by the website owner",
+      "The link was created by a user (e.g., in a comment or forum post), not by the website owner",
+      "The link leads to an official social media profile verified by the platform",
     ],
     correct: 1,
-    explanation: 'UGC stands for User Generated Content. The rel="ugc" attribute signals that the link was added by a user (in a comment, forum post, etc.) rather than the site\'s editorial team — helping search engines treat it differently from editorial links.',
+    explanation: "UGC stands for User Generated Content. rel=\"ugc\" signals that the link was added by a user — in a comment, forum reply, or similar — rather than by the site's editorial team. This helps search engines treat it differently from editorial links.",
   },
+
+  // Q18 — Short-Tail Keywords (best example — tricky answer position) — correct: C (2)
   {
     id: 18,
-    question: 'Which of the following is the BEST example of a short-tail keyword?',
+    text: "Which of the following is the BEST example of a short-tail keyword?",
     options: [
       '"Best noise-cancelling headphones under $100 for remote work"',
       '"How to train a golden retriever puppy in 30 days"',
       '"Shoes"',
     ],
     correct: 2,
-    explanation: '"Shoes" is a classic short-tail keyword — a single broad word with very high search volume and intense competition but low conversion rates. The other options are long-tail keywords (3+ words, more specific, higher conversion).',
+    explanation: "'Shoes' is a classic short-tail keyword — a single broad word with very high search volume and intense competition. Options A and B are long-tail keywords (3+ words, more specific, higher conversion rate). Short-tail keywords attract large audiences but convert poorly.",
   },
+
+  // Q19 — Website Navigation (definition) — correct: A (0)
   {
     id: 19,
-    question: 'What does "website navigation" fundamentally refer to?',
+    text: "What does 'website navigation' fundamentally refer to?",
     options: [
-      'The process of navigating a network of information resources on the web, organised as hypertext or hypermedia',
-      'The URL structure and folder hierarchy used to organise pages within a domain',
-      'The speed at which a user can load each page while browsing a website',
+      "The process of navigating a network of information resources on the web, organised as hypertext or hypermedia",
+      "The URL structure and folder hierarchy used to organise pages within a domain",
+      "The speed at which a user can load each page while browsing a website",
     ],
     correct: 0,
-    explanation: 'Website navigation refers to the process of navigating information on the World Wide Web — which is organised as hypertext (linked text) or hypermedia (linked media including images, audio, and video).',
+    explanation: "Website navigation is the process of navigating information on the World Wide Web — which is organised as hypertext (linked text) or hypermedia (linked media including images, audio, and video). URL structure and page speed are separate concepts.",
   },
+
+  // Q20 — URL Slug (anatomy — tricky) — correct: C (2)
   {
     id: 20,
-    question: 'In the URL "https://example.com/blog/what-is-seo", what is the URL slug?',
+    text: "In the URL 'https://example.com/blog/what-is-seo', what is the URL slug?",
     options: [
-      'https://example.com',
-      '/blog',
-      'what-is-seo',
+      "https://example.com",
+      "/blog",
+      "what-is-seo",
     ],
     correct: 2,
-    explanation: 'The URL slug is "what-is-seo" — the final, human-readable segment of the URL that identifies the specific page. The protocol + domain is "https://example.com" and "/blog" is the path/category, not the slug.',
+    explanation: "The URL slug is 'what-is-seo' — the final, human-readable segment that identifies the specific page. 'https://example.com' is the protocol + domain, and '/blog' is the category path. The slug is what comes at the very end and describes the page content.",
   },
 ]
 
 // ─────────────────────────────────────
-// Circular countdown timer
+// Circular Timer
 // ─────────────────────────────────────
-function CircularTimer({ timeLeft, total }: { timeLeft: number; total: number }) {
-  const radius = 28
-  const circumference = 2 * Math.PI * radius
-  const progress = timeLeft / total
-  const dashOffset = circumference * (1 - progress)
-  const isWarning = timeLeft <= 60
-
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
-
+function CircularTimer({ timeLeft }: { timeLeft: number }) {
+  const r = 38
+  const c = 2 * Math.PI * r
+  const offset = c * (1 - timeLeft / TOTAL_TIME)
+  const color = timeLeft < 60 ? '#ef4444' : timeLeft < 180 ? '#f59e0b' : '#7c3aed'
+  const pulse = timeLeft < 60
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative w-16 h-16">
-        <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-          <circle cx="32" cy="32" r={radius}
-            fill="none" stroke="currentColor"
-            strokeWidth="4"
-            className="text-gray-200 dark:text-gray-700" />
-          <circle cx="32" cy="32" r={radius}
-            fill="none"
-            stroke={isWarning ? '#ef4444' : '#6366f1'}
-            strokeWidth="4"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
-            strokeLinecap="round"
-            className="transition-all duration-1000" />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className={`text-xs font-bold tabular-nums ${isWarning ? 'text-red-500' : 'text-gray-700 dark:text-gray-200'}`}>
-            {minutes}:{seconds.toString().padStart(2, '0')}
-          </span>
-        </div>
+    <div className={`relative inline-flex items-center justify-center ${pulse ? 'animate-pulse' : ''}`}>
+      <svg width="96" height="96" className="-rotate-90">
+        <circle cx="48" cy="48" r={r} fill="none" stroke="#e5e7eb" strokeWidth="7" className="dark:stroke-gray-700" />
+        <circle cx="48" cy="48" r={r} fill="none" stroke={color} strokeWidth="7"
+          strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.4s' }}
+        />
+      </svg>
+      <div className="absolute flex flex-col items-center">
+        <span className="text-base font-bold tabular-nums leading-none" style={{ color }}>{fmt(timeLeft)}</span>
+        <span className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5">left</span>
       </div>
-      {isWarning && (
-        <span className="text-red-500 text-xs font-semibold animate-pulse">Low time!</span>
-      )}
     </div>
   )
 }
 
 // ─────────────────────────────────────
-// Intro screen
+// Question Grid
+// ─────────────────────────────────────
+function QGrid({ current, answers, onJump }: {
+  current: number; answers: Record<number, string>; onJump: (i: number) => void
+}) {
+  return (
+    <div className="grid grid-cols-5 gap-1.5">
+      {questions.map((_, i) => (
+        <button key={i} onClick={() => onJump(i)} title={`Question ${i + 1}`}
+          className={`w-8 h-8 text-xs font-bold rounded-lg transition-all ${
+            i === current ? 'ring-2 ring-violet-500 ring-offset-1 dark:ring-offset-gray-900' : ''
+          } ${
+            answers[i] !== undefined
+              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
+              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+          }`}
+        >
+          {i + 1}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
+// Intro Screen
 // ─────────────────────────────────────
 function IntroScreen({ onStart }: { onStart: () => void }) {
+  const meta = [
+    { label: 'Duration',  value: '15 minutes' },
+    { label: 'Questions', value: '20' },
+    { label: 'Marks',     value: '20' },
+    { label: 'Pass Mark', value: '100%' },
+  ]
+  const rules = [
+    'Once started, the timer cannot be paused.',
+    'Switching browser tabs is restricted — 3 violations will auto-terminate the test.',
+    'All questions must be answered within the allotted time.',
+    'Unanswered questions will be counted as incorrect.',
+    'You can navigate between questions freely using the number grid.',
+  ]
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-xl mx-auto text-center py-10">
-      <div className="w-20 h-20 bg-gradient-to-br from-slate-600 via-blue-600 to-violet-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-        <BookOpen className="w-10 h-10 text-white" />
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto space-y-6">
+      <div className="bg-gradient-to-br from-violet-600 to-indigo-700 text-white rounded-3xl p-8 relative overflow-hidden">
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-3">
+            <BookOpen className="w-4 h-4 text-violet-300" />
+            <p className="text-violet-200 text-sm font-semibold uppercase tracking-widest">Module 2 · Test</p>
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Test: Key Terminologies-7</h2>
+          <p className="text-violet-100 text-sm leading-relaxed">
+            20 questions covering Sidebar Links, Search Algorithm, Search Intent, Search Results,
+            Search Term, Search Visibility, Secondary Keywords, Short-Tail Keywords, Sponsored Post,
+            Sponsored Tag, Site Speed, Trust Flow, Traffic, UGC Link Attribute, URL Slug,
+            Webpage, Website Navigation, White Hat SEO, Word Count, and Web Address.
+          </p>
+        </div>
       </div>
-      <p className="text-slate-600 dark:text-slate-400 text-sm font-bold uppercase tracking-widest mb-2">Module 2 · Lesson 24</p>
-      <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-50 mb-3">Test: Key Terminologies-7</h1>
-      <p className="text-gray-500 dark:text-gray-400 mb-8 leading-relaxed text-sm">
-        20 questions covering Sidebar Links, Search Algorithm, Search Intent, Search Results,
-        Search Term, Search Visibility, Secondary Keywords, Short-Tail Keywords, Sponsored Post,
-        Sponsored Tag, Site Speed, Trust Flow, Traffic, UGC Link Attribute, URL Slug,
-        Webpage, Website Navigation, White Hat SEO, Word Count, and Web Address.
-      </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-8 text-left">
-        {[
-          { icon: '❓', label: '20 Questions',       desc: 'Multiple choice, 3 options each' },
-          { icon: '⏱️', label: '15 Minutes',          desc: 'Circular countdown timer' },
-          { icon: '🚫', label: `${MAX_TAB_SWITCHES} Tab Switches`, desc: 'Auto-submit after limit' },
-          { icon: '📊', label: 'Instant Results',     desc: 'Score & explanations shown' },
-        ].map(f => (
-          <div key={f.label} className="bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl p-4">
-            <p className="text-xl mb-1">{f.icon}</p>
-            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{f.label}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{f.desc}</p>
+      <div className="grid grid-cols-4 gap-3">
+        {meta.map(m => (
+          <div key={m.label} className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 text-center">
+            <p className="text-lg font-bold text-violet-700 dark:text-violet-400">{m.value}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{m.label}</p>
           </div>
         ))}
       </div>
 
-      <button onClick={onStart}
-        className="w-full bg-gradient-to-r from-slate-700 via-blue-600 to-violet-600 hover:opacity-90 text-white font-bold py-4 px-8 rounded-2xl transition text-base shadow-lg">
-        Start Quiz →
-      </button>
+      <div className="bg-amber-50 dark:bg-amber-950 rounded-2xl border border-amber-200 dark:border-amber-800 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">Important Rules</p>
+        </div>
+        <ul className="space-y-2">
+          {rules.map((r, i) => (
+            <li key={i} className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-300">
+              <span className="font-bold flex-shrink-0 mt-0.5">{i + 1}.</span>
+              {r}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onStart}
+        className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold py-4 rounded-2xl text-base shadow-lg hover:shadow-violet-200 dark:hover:shadow-violet-900 transition-shadow">
+        Start Test →
+      </motion.button>
     </motion.div>
   )
 }
 
 // ─────────────────────────────────────
-// Main export
+// Results Screen
 // ─────────────────────────────────────
-export default function Lesson24Quiz() {
-  const [phase, setPhase]             = useState<Phase>('intro')
-  const [current, setCurrent]         = useState(0)
-  const [answers, setAnswers]         = useState<(number | null)[]>(Array(QUESTIONS.length).fill(null))
-  const [selected, setSelected]       = useState<number | null>(null)
-  const [confirmed, setConfirmed]     = useState(false)
-  const [timeLeft, setTimeLeft]       = useState(TOTAL_TIME)
-  const [tabSwitches, setTabSwitches] = useState(0)
-  const [showExplanation, setShowExplanation] = useState(false)
+function ResultsScreen({ answers, terminated, timeUsed, onRetry }: {
+  answers: Record<number, string>; terminated: boolean; timeUsed: number; onRetry: () => void
+}) {
+  let correct = 0
+  questions.forEach((q, i) => {
+    if (answers[i] !== undefined && parseInt(answers[i]) === q.correct) correct++
+  })
+  const passed = correct === questions.length && !terminated
 
-  // ── Timer ──
-  useEffect(() => {
-    if (phase !== 'quiz') return
-    if (timeLeft <= 0) { setPhase('result'); return }
-    const t = setInterval(() => setTimeLeft(p => p - 1), 1000)
-    return () => clearInterval(t)
-  }, [phase, timeLeft])
-
-  // ── Tab-switch detection ──
-  const submitQuiz = useCallback(() => setPhase('result'), [])
-
-  useEffect(() => {
-    if (phase !== 'quiz') return
-    const handle = () => {
-      if (document.hidden) {
-        setTabSwitches(prev => {
-          const next = prev + 1
-          if (next >= MAX_TAB_SWITCHES) submitQuiz()
-          return next
-        })
-      }
-    }
-    document.addEventListener('visibilitychange', handle)
-    return () => document.removeEventListener('visibilitychange', handle)
-  }, [phase, submitQuiz])
-
-  function handleSelect(idx: number) {
-    if (confirmed) return
-    setSelected(idx)
-  }
-
-  function handleConfirm() {
-    if (selected === null || confirmed) return
-    const updated = [...answers]
-    updated[current] = selected
-    setAnswers(updated)
-    setConfirmed(true)
-    setShowExplanation(false)
-  }
-
-  function handleNext() {
-    if (current < QUESTIONS.length - 1) {
-      setCurrent(c => c + 1)
-      setSelected(null)
-      setConfirmed(false)
-      setShowExplanation(false)
-    } else {
-      setPhase('result')
-    }
-  }
-
-  function handleRestart() {
-    setPhase('intro')
-    setCurrent(0)
-    setAnswers(Array(QUESTIONS.length).fill(null))
-    setSelected(null)
-    setConfirmed(false)
-    setTimeLeft(TOTAL_TIME)
-    setTabSwitches(0)
-    setShowExplanation(false)
-  }
-
-  // ─────────────────────────────────────
-  // Result screen
-  // ─────────────────────────────────────
-  if (phase === 'result') {
-    const score = answers.filter((a, i) => a === QUESTIONS[i].correct).length
-    const pct   = Math.round((score / QUESTIONS.length) * 100)
-    const grade = pct >= 90 ? 'Excellent' : pct >= 70 ? 'Good' : pct >= 50 ? 'Fair' : 'Needs Review'
-    const gradeColor = pct >= 90 ? 'text-emerald-600 dark:text-emerald-400'
-      : pct >= 70 ? 'text-blue-600 dark:text-blue-400'
-      : pct >= 50 ? 'text-amber-600 dark:text-amber-400'
-      : 'text-red-600 dark:text-red-400'
-
-    return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <div className="text-center py-8">
-          <div className="w-20 h-20 bg-gradient-to-br from-slate-600 via-blue-600 to-violet-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Trophy className="w-10 h-10 text-white" />
+  return (
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-2xl mx-auto space-y-6">
+      <div className={`rounded-3xl p-8 text-white relative overflow-hidden ${
+        terminated ? 'bg-gradient-to-br from-red-600 to-rose-700' :
+        passed     ? 'bg-gradient-to-br from-emerald-600 to-teal-700' :
+                     'bg-gradient-to-br from-amber-500 to-orange-600'
+      }`}>
+        <div className="absolute -top-8 -right-8 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+        <div className="relative flex items-center gap-6">
+          <div className="text-center">
+            <div className="text-5xl font-black">{correct}/{questions.length}</div>
+            <div className="text-sm opacity-80 mt-1">Score</div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-50 mb-1">Quiz Complete!</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">Test: Key Terminologies-7</p>
-
-          <div className="inline-flex flex-col items-center bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl px-12 py-6 mb-6">
-            <span className={`text-6xl font-black ${gradeColor}`}>{pct}%</span>
-            <span className={`text-lg font-bold ${gradeColor} mt-1`}>{grade}</span>
-            <span className="text-gray-500 dark:text-gray-400 text-sm mt-1">{score} / {QUESTIONS.length} correct</span>
-          </div>
-
-          {tabSwitches > 0 && (
-            <div className="flex items-center justify-center gap-2 text-amber-600 dark:text-amber-400 text-sm mb-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-xl px-4 py-2 max-w-xs mx-auto">
-              <AlertTriangle className="w-4 h-4" />
-              <span>{tabSwitches} tab switch{tabSwitches > 1 ? 'es' : ''} detected</span>
+          <div>
+            <div className="text-2xl font-bold mb-1">
+              {terminated ? 'Test Terminated' : passed ? 'Perfect Score!' : 'Almost There!'}
             </div>
-          )}
-
-          <button onClick={handleRestart}
-            className="flex items-center gap-2 mx-auto bg-gradient-to-r from-slate-700 via-blue-600 to-violet-600 hover:opacity-90 text-white font-bold py-3 px-8 rounded-xl transition mb-10 shadow">
-            <RotateCcw className="w-4 h-4" /> Retry Quiz
-          </button>
+            <div className="text-sm opacity-90">
+              {terminated
+                ? 'Tab switching limit exceeded.'
+                : passed
+                ? 'All 20 questions answered correctly!'
+                : `${questions.length - correct} question${questions.length - correct !== 1 ? 's' : ''} need review.`}
+            </div>
+            <div className="text-xs opacity-70 mt-2">Time used: {fmt(timeUsed)}</div>
+          </div>
         </div>
+      </div>
 
-        {/* Review */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-gray-900 dark:text-gray-50 text-lg">Review All Questions</h3>
-          {QUESTIONS.map((q, i) => {
-            const userAns = answers[i]
-            const isCorrect = userAns === q.correct
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: 'Correct',   value: correct,                                        color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950', border: 'border-emerald-200 dark:border-emerald-800' },
+          { label: 'Incorrect', value: questions.length - correct,                     color: 'text-red-600 dark:text-red-400',         bg: 'bg-red-50 dark:bg-red-950',         border: 'border-red-200 dark:border-red-800'         },
+          { label: 'Skipped',   value: questions.length - Object.keys(answers).length, color: 'text-gray-500 dark:text-gray-400',       bg: 'bg-gray-50 dark:bg-gray-900',       border: 'border-gray-200 dark:border-gray-700'       },
+        ].map(s => (
+          <div key={s.label} className={`${s.bg} ${s.border} border rounded-xl p-4 text-center`}>
+            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <p className="font-bold text-gray-900 dark:text-gray-50 mb-3 text-sm">Answer Review</p>
+        <div className="space-y-2">
+          {questions.map((q, i) => {
+            const userAnswer = answers[i]
+            const isCorrect  = userAnswer !== undefined && parseInt(userAnswer) === q.correct
+            const isWrong    = userAnswer !== undefined && !isCorrect
+            const unanswered = userAnswer === undefined
             return (
-              <div key={q.id} className={`rounded-2xl border p-5 ${isCorrect ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800' : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'}`}>
-                <div className="flex items-start gap-3 mb-3">
-                  {isCorrect
-                    ? <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                    : <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />}
-                  <p className="font-semibold text-gray-900 dark:text-gray-50 text-sm leading-relaxed">Q{i + 1}. {q.question}</p>
-                </div>
-                <div className="ml-8 space-y-1 mb-3">
-                  {q.options.map((opt, oi) => {
-                    const isCorrectOpt = oi === q.correct
-                    const isUserOpt    = oi === userAns
-                    return (
-                      <div key={oi} className={`text-xs px-3 py-2 rounded-lg ${
-                        isCorrectOpt
-                          ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 font-semibold'
-                          : isUserOpt && !isCorrect
-                            ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 line-through'
-                            : 'text-gray-500 dark:text-gray-400'
-                      }`}>
-                        {['A', 'B', 'C'][oi]}. {opt}
+              <div key={q.id} className={`rounded-xl border p-4 ${
+                isCorrect  ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950' :
+                isWrong    ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950' :
+                             'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900'
+              }`}>
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    {isCorrect  ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> :
+                     isWrong    ? <XCircle className="w-4 h-4 text-red-500" /> :
+                                  <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-1">Q{q.id}</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-200 mb-2 leading-snug">{q.text}</p>
+                    {isWrong && (
+                      <div className="space-y-1">
+                        <p className="text-xs text-red-600 dark:text-red-400">Your answer: <span className="font-semibold">{q.options[parseInt(userAnswer)]}</span></p>
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400">Correct: <span className="font-semibold">{q.options[q.correct]}</span></p>
                       </div>
-                    )
-                  })}
+                    )}
+                    {unanswered && <p className="text-xs text-gray-400 dark:text-gray-500">Not answered</p>}
+                    {(isWrong || unanswered) && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">{q.explanation}</p>
+                    )}
+                  </div>
                 </div>
-                <p className="ml-8 text-xs text-gray-600 dark:text-gray-400 leading-relaxed italic">{q.explanation}</p>
               </div>
             )
           })}
         </div>
-      </motion.div>
-    )
-  }
-
-  // ─────────────────────────────────────
-  // Intro screen
-  // ─────────────────────────────────────
-  if (phase === 'intro') {
-    return <IntroScreen onStart={() => setPhase('quiz')} />
-  }
-
-  // ─────────────────────────────────────
-  // Quiz screen
-  // ─────────────────────────────────────
-  const q = QUESTIONS[current]
-  const isLast = current === QUESTIONS.length - 1
-
-  return (
-    <div>
-      {/* Header bar */}
-      <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-        <div className="flex items-center gap-3">
-          <CircularTimer timeLeft={timeLeft} total={TOTAL_TIME} />
-          <div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-widest">Question</p>
-            <p className="text-lg font-bold text-gray-900 dark:text-gray-50">{current + 1} <span className="text-gray-400 font-normal text-sm">/ {QUESTIONS.length}</span></p>
-          </div>
-        </div>
-        {tabSwitches > 0 && (
-          <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs px-3 py-1.5 rounded-full font-semibold">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            Tab switches: {tabSwitches}/{MAX_TAB_SWITCHES}
-          </div>
-        )}
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full mb-8 overflow-hidden">
+      <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onRetry}
+        className="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+        <RotateCcw className="w-4 h-4" />
+        Retake Test
+      </motion.button>
+    </motion.div>
+  )
+}
+
+// ─────────────────────────────────────
+// Tab Warning Modal
+// ─────────────────────────────────────
+function TabWarning({ count, countdown, onDismiss }: { count: number; countdown: number; onDismiss: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center">
+        <div className="w-14 h-14 bg-amber-100 dark:bg-amber-900 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle className="w-7 h-7 text-amber-600 dark:text-amber-400" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-50 mb-2">Tab Switch Detected</h3>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mb-1">
+          This is warning <strong className="text-amber-600 dark:text-amber-400">{count}</strong> of {MAX_TAB_SWITCHES}.
+        </p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+          {MAX_TAB_SWITCHES - count} more {MAX_TAB_SWITCHES - count === 1 ? 'violation' : 'violations'} will terminate your test.
+        </p>
+        <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mb-4 tabular-nums">{countdown}</div>
+        <motion.button whileTap={{ scale: 0.97 }} onClick={onDismiss}
+          className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold py-3 rounded-xl">
+          Return to Test
+        </motion.button>
+      </motion.div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
+// Submit Confirm Modal
+// ─────────────────────────────────────
+function SubmitConfirm({ unanswered, onConfirm, onCancel }: {
+  unanswered: number; onConfirm: () => void; onCancel: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div initial={{ scale: 0.85, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+        className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center">
+        <div className="w-14 h-14 bg-violet-100 dark:bg-violet-900 rounded-full flex items-center justify-center mx-auto mb-4">
+          <Send className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+        </div>
+        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-50 mb-2">Submit Test?</h3>
+        {unanswered > 0 ? (
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
+            You have <strong className="text-amber-600 dark:text-amber-400">{unanswered} unanswered question{unanswered !== 1 ? 's' : ''}</strong>. These will count as incorrect.
+          </p>
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">All 20 questions answered. Ready to submit?</p>
+        )}
+        <div className="flex gap-3">
+          <button onClick={onCancel}
+            className="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+            Continue
+          </button>
+          <button onClick={onConfirm}
+            className="flex-1 py-3 rounded-xl bg-violet-600 text-white font-semibold hover:bg-violet-700 transition">
+            Submit
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
+// Main Component
+// ─────────────────────────────────────
+export default function Lesson24Quiz() {
+  const [phase, setPhase]       = useState<Phase>('intro')
+  const [currentQ, setCurrentQ] = useState(0)
+  const [answers, setAnswers]   = useState<Record<number, string>>({})
+  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME)
+  const [tabSwitches, setTabSwitches] = useState(0)
+  const [warningOpen, setWarningOpen] = useState(false)
+  const [warningCountdown, setWarningCountdown] = useState(10)
+  const [terminated, setTerminated] = useState(false)
+  const [showSubmit, setShowSubmit] = useState(false)
+  const [direction, setDirection] = useState(1)
+
+  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null)
+  const warnRef     = useRef<ReturnType<typeof setInterval> | null>(null)
+  const tabCountRef = useRef(0)
+
+  useEffect(() => {
+    if (phase !== 'quiz') return
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) { clearInterval(timerRef.current!); setPhase('results'); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timerRef.current!)
+  }, [phase])
+
+  useEffect(() => {
+    if (phase !== 'quiz') return
+    const onVis = () => {
+      if (!document.hidden) return
+      tabCountRef.current += 1
+      const c = tabCountRef.current
+      setTabSwitches(c)
+      if (c >= MAX_TAB_SWITCHES) {
+        setTerminated(true)
+        clearInterval(timerRef.current!)
+        setPhase('results')
+        return
+      }
+      setWarningCountdown(10)
+      setWarningOpen(true)
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  }, [phase])
+
+  useEffect(() => {
+    if (!warningOpen) return
+    warnRef.current = setInterval(() => {
+      setWarningCountdown(prev => {
+        if (prev <= 1) { clearInterval(warnRef.current!); setWarningOpen(false); return 10 }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(warnRef.current!)
+  }, [warningOpen])
+
+  const go = (dir: number) => {
+    const next = currentQ + dir
+    if (next < 0 || next >= questions.length) return
+    setDirection(dir)
+    setCurrentQ(next)
+  }
+
+  const jumpTo = (i: number) => { setDirection(i > currentQ ? 1 : -1); setCurrentQ(i) }
+
+  const unanswered = questions.length - Object.keys(answers).length
+  const q = questions[currentQ]
+
+  const handleRetry = () => {
+    setPhase('intro'); setCurrentQ(0); setAnswers({}); setTimeLeft(TOTAL_TIME)
+    setTabSwitches(0); setTerminated(false); setShowSubmit(false); tabCountRef.current = 0
+  }
+
+  if (phase === 'intro')   return <IntroScreen onStart={() => setPhase('quiz')} />
+  if (phase === 'results') return <ResultsScreen answers={answers} terminated={terminated} timeUsed={TOTAL_TIME - timeLeft} onRetry={handleRetry} />
+
+  return (
+    <div className="space-y-4">
+
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-bold">Test in Progress</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-gray-50">Key Terminologies-7</p>
+        </div>
+        <div className="lg:hidden flex items-center gap-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl px-4 py-2">
+          <Clock className="w-4 h-4 text-gray-400" />
+          <span className={`font-bold tabular-nums text-sm ${timeLeft < 60 ? 'text-red-500' : timeLeft < 180 ? 'text-amber-500' : 'text-violet-600 dark:text-violet-400'}`}>
+            {fmt(timeLeft)}
+          </span>
+        </div>
+      </div>
+
+      <div className="w-full h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
         <motion.div
-          className="h-full bg-gradient-to-r from-slate-600 via-blue-500 to-violet-500 rounded-full"
-          initial={false}
-          animate={{ width: `${((current + 1) / QUESTIONS.length) * 100}%` }}
+          className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full"
+          animate={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
           transition={{ duration: 0.4 }}
         />
       </div>
+      <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500">
+        <span>{Object.keys(answers).length} answered</span>
+        <span>{unanswered} remaining</span>
+      </div>
 
-      {/* Question card */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={q.id}
-          initial={{ opacity: 0, x: 30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.25 }}
-        >
-          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 mb-5 shadow-sm">
-            <p className="text-gray-900 dark:text-gray-50 font-semibold text-base sm:text-lg leading-relaxed">{q.question}</p>
-          </div>
+      <div className="flex gap-5 items-start">
 
-          {/* Options */}
-          <div className="space-y-3 mb-6">
-            {q.options.map((opt, oi) => {
-              let style = 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-violet-400 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-950'
-              if (confirmed) {
-                if (oi === q.correct) style = 'bg-emerald-50 dark:bg-emerald-950 border-emerald-400 dark:border-emerald-600 text-emerald-800 dark:text-emerald-200'
-                else if (oi === selected) style = 'bg-red-50 dark:bg-red-950 border-red-400 dark:border-red-600 text-red-700 dark:text-red-300'
-                else style = 'bg-gray-50 dark:bg-gray-900 border-gray-100 dark:border-gray-800 text-gray-400 dark:text-gray-500'
-              } else if (selected === oi) {
-                style = 'bg-violet-50 dark:bg-violet-950 border-violet-500 dark:border-violet-400 text-violet-800 dark:text-violet-200'
-              }
-
-              return (
-                <button
-                  key={oi}
-                  onClick={() => handleSelect(oi)}
-                  disabled={confirmed}
-                  className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition text-left group ${style}`}
-                >
-                  <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 border ${
-                    confirmed && oi === q.correct
-                      ? 'bg-emerald-500 border-emerald-500 text-white'
-                      : confirmed && oi === selected && oi !== q.correct
-                        ? 'bg-red-500 border-red-500 text-white'
-                        : selected === oi && !confirmed
-                          ? 'bg-violet-500 border-violet-500 text-white'
-                          : 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400'
-                  }`}>
-                    {['A', 'B', 'C'][oi]}
+        <div className="flex-1 min-w-0">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentQ}
+              custom={direction}
+              initial={{ opacity: 0, x: direction * 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -40 }}
+              transition={{ duration: 0.22 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden"
+            >
+              <div className="bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950 dark:to-indigo-950 px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl font-black text-violet-700 dark:text-violet-400">
+                    {(currentQ + 1).toString().padStart(2, '0')}
                   </span>
-                  <span className="text-sm sm:text-base leading-snug">{opt}</span>
-                  {confirmed && oi === q.correct && <CheckCircle2 className="w-5 h-5 text-emerald-500 ml-auto flex-shrink-0" />}
-                  {confirmed && oi === selected && oi !== q.correct && <XCircle className="w-5 h-5 text-red-500 ml-auto flex-shrink-0" />}
-                </button>
-              )
-            })}
-          </div>
+                  <span className="text-gray-400 dark:text-gray-500 text-sm">/ {questions.length}</span>
+                </div>
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                  1 Mark
+                </span>
+              </div>
 
-          {/* Explanation toggle (after confirming) */}
-          {confirmed && (
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-5">
-              <button
-                onClick={() => setShowExplanation(p => !p)}
-                className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400 font-semibold mb-2 hover:underline"
-              >
-                {showExplanation ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                {showExplanation ? 'Hide explanation' : 'Show explanation'}
-              </button>
-              <AnimatePresence>
-                {showExplanation && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-xl px-4 py-3"
-                  >
-                    <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">{q.explanation}</p>
-                  </motion.div>
+              <div className="p-6 space-y-5">
+                <p className="text-gray-900 dark:text-gray-50 font-semibold text-[15px] leading-relaxed">{q.text}</p>
+                <div className="space-y-2.5">
+                  {q.options.map((opt, oi) => {
+                    const selected = answers[currentQ] === oi.toString()
+                    const letter = ['A', 'B', 'C'][oi]
+                    return (
+                      <motion.button key={oi} whileTap={{ scale: 0.99 }}
+                        onClick={() => setAnswers(a => ({ ...a, [currentQ]: oi.toString() }))}
+                        className={`w-full text-left flex items-center gap-4 px-5 py-4 rounded-xl border-2 transition-all ${
+                          selected
+                            ? 'border-violet-500 bg-violet-50 dark:bg-violet-950'
+                            : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 transition ${
+                          selected ? 'bg-violet-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {letter}
+                        </span>
+                        <p className={`text-sm flex-1 ${selected ? 'text-violet-900 dark:text-violet-100 font-medium' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {opt}
+                        </p>
+                        {selected && <CheckCircle2 className="w-4 h-4 text-violet-500 flex-shrink-0" />}
+                      </motion.button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between gap-3">
+                <motion.button whileTap={{ scale: 0.97 }} onClick={() => go(-1)} disabled={currentQ === 0}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm font-semibold disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-gray-800 transition">
+                  <ChevronLeft className="w-4 h-4" /> Previous
+                </motion.button>
+                {currentQ === questions.length - 1 ? (
+                  <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowSubmit(true)}
+                    className="flex items-center gap-2 px-5 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold transition">
+                    <Send className="w-4 h-4" /> Submit Test
+                  </motion.button>
+                ) : (
+                  <motion.button whileTap={{ scale: 0.97 }} onClick={() => go(1)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold transition">
+                    Next <ChevronRight className="w-4 h-4" />
+                  </motion.button>
                 )}
-              </AnimatePresence>
+              </div>
             </motion.div>
-          )}
+          </AnimatePresence>
+        </div>
 
-          {/* Action buttons */}
-          <div className="flex gap-3">
-            {!confirmed ? (
-              <button
-                onClick={handleConfirm}
-                disabled={selected === null}
-                className="flex-1 bg-gradient-to-r from-slate-700 via-blue-600 to-violet-600 hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-3.5 px-6 rounded-xl transition shadow"
-              >
-                Confirm Answer
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-slate-700 via-blue-600 to-violet-600 hover:opacity-90 text-white font-bold py-3.5 px-6 rounded-xl transition shadow"
-              >
-                {isLast ? 'See Results' : 'Next Question'}
-                <ChevronRight className="w-4 h-4" />
-              </button>
+        <div className="hidden lg:flex flex-col gap-4 w-56 flex-shrink-0 sticky top-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4 text-center">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Time Left</p>
+            <CircularTimer timeLeft={timeLeft} />
+            {tabSwitches > 0 && (
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold mt-2">
+                ⚠️ {tabSwitches}/{MAX_TAB_SWITCHES} tab switches
+              </p>
             )}
           </div>
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Question dots */}
-      <div className="flex flex-wrap gap-1.5 mt-8 justify-center">
-        {QUESTIONS.map((_, i) => {
-          const answered = answers[i] !== null
-          const correct  = answered && answers[i] === QUESTIONS[i].correct
-          return (
-            <div
-              key={i}
-              title={`Q${i + 1}`}
-              className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center transition ${
-                i === current
-                  ? 'bg-violet-600 text-white scale-125 shadow'
-                  : correct
-                    ? 'bg-emerald-400 text-white'
-                    : answered
-                      ? 'bg-red-400 text-white'
-                      : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500'
-              }`}
-            >
-              {i + 1}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-4">
+            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">Questions</p>
+            <QGrid current={currentQ} answers={answers} onJump={jumpTo} />
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+                <span className="text-xs text-gray-500 dark:text-gray-400">Answered</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-700" />
+                <span className="text-xs text-gray-500 dark:text-gray-400">Pending</span>
+              </div>
             </div>
-          )
-        })}
+          </div>
+          <motion.button whileTap={{ scale: 0.97 }} onClick={() => setShowSubmit(true)}
+            className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 text-white font-bold py-3 rounded-xl text-sm transition">
+            <Send className="w-4 h-4" /> Submit Test
+          </motion.button>
+        </div>
       </div>
+
+      <AnimatePresence>
+        {warningOpen && (
+          <TabWarning count={tabSwitches} countdown={warningCountdown}
+            onDismiss={() => { clearInterval(warnRef.current!); setWarningOpen(false) }} />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showSubmit && (
+          <SubmitConfirm unanswered={unanswered}
+            onConfirm={() => { clearInterval(timerRef.current!); setPhase('results') }}
+            onCancel={() => setShowSubmit(false)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }
