@@ -4,25 +4,25 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ChevronRight, BarChart2, Link2, Link, Link2Off, Star, Copy, AlertOctagon,
-  Navigation, Globe, Clock, TrendingUp, Award, ExternalLink
+  Navigation, Globe, Clock, TrendingUp, Award, ExternalLink, BookOpen
 } from 'lucide-react'
 
 // ─────────────────────────────────────
 // Term navigation data
 // ─────────────────────────────────────
 const TERMS = [
-  { id: 'competitor-analysis', label: 'Competitor Analysis', icon: BarChart2,    color: 'indigo'  },
-  { id: 'contextual-links',    label: 'Contextual Links',    icon: Link2,         color: 'teal'    },
-  { id: 'dofollow-link',       label: 'Do-follow Link',      icon: Link,          color: 'green'   },
-  { id: 'nofollow-link',       label: 'No-follow Link',      icon: Link2Off,      color: 'cyan'    },
-  { id: 'domain-rating',       label: 'Domain Rating (DR)',  icon: Star,          color: 'violet'  },
-  { id: 'duplicate-content',   label: 'Duplicate Content',   icon: Copy,          color: 'red'     },
-  { id: 'de-index',            label: 'De-Index',            icon: AlertOctagon,  color: 'orange'  },
-  { id: 'direct-traffic',      label: 'Direct Traffic',      icon: Navigation,    color: 'blue'    },
-  { id: 'domain',              label: 'Domain',              icon: Globe,         color: 'purple'  },
-  { id: 'domain-age',          label: 'Domain Age',          icon: Clock,         color: 'amber'   },
-  { id: 'domain-authority',    label: 'Domain Authority',    icon: TrendingUp,    color: 'emerald' },
-  { id: 'editorial-link',      label: 'Editorial Link',      icon: Award,         color: 'rose'    },
+  { id: 'competitor-analysis', label: 'Competitor Analysis', shortLabel: 'Comp. Analysis',    icon: BarChart2,    color: 'indigo'  },
+  { id: 'contextual-links',    label: 'Contextual Links',    shortLabel: 'Contextual Links',  icon: Link2,         color: 'teal'    },
+  { id: 'dofollow-link',       label: 'Do-follow Link',      shortLabel: 'Do-follow Link',    icon: Link,          color: 'green'   },
+  { id: 'nofollow-link',       label: 'No-follow Link',      shortLabel: 'No-follow Link',    icon: Link2Off,      color: 'cyan'    },
+  { id: 'domain-rating',       label: 'Domain Rating (DR)',  shortLabel: 'Domain Rating',     icon: Star,          color: 'violet'  },
+  { id: 'duplicate-content',   label: 'Duplicate Content',   shortLabel: 'Duplicate Content', icon: Copy,          color: 'red'     },
+  { id: 'de-index',            label: 'De-Index',            shortLabel: 'De-Index',          icon: AlertOctagon,  color: 'orange'  },
+  { id: 'direct-traffic',      label: 'Direct Traffic',      shortLabel: 'Direct Traffic',    icon: Navigation,    color: 'blue'    },
+  { id: 'domain',              label: 'Domain',              shortLabel: 'Domain',            icon: Globe,         color: 'purple'  },
+  { id: 'domain-age',          label: 'Domain Age',          shortLabel: 'Domain Age',        icon: Clock,         color: 'amber'   },
+  { id: 'domain-authority',    label: 'Domain Authority',    shortLabel: 'Domain Authority',  icon: TrendingUp,    color: 'emerald' },
+  { id: 'editorial-link',      label: 'Editorial Link',      shortLabel: 'Editorial Link',    icon: Award,         color: 'rose'    },
 ]
 
 // Color maps
@@ -668,7 +668,6 @@ const SECTION_COMPONENTS = [
 
 export default function Lesson13KeyTerminologies() {
   const [activeTerm, setActiveTerm] = useState(TERMS[0].id)
-  const navRef  = useRef<HTMLDivElement>(null)
   const refsMap = useRef<Map<string, HTMLElement>>(new Map())
 
   const setRef = useCallback((id: string) => (el: HTMLElement | null) => {
@@ -676,17 +675,11 @@ export default function Lesson13KeyTerminologies() {
     else refsMap.current.delete(id)
   }, [])
 
-  // IntersectionObserver for active pill tracking
   useEffect(() => {
     const obs = new IntersectionObserver(
       entries => {
         for (const e of entries) {
-          if (e.isIntersecting) {
-            setActiveTerm(e.target.id)
-            // Scroll active pill into view in nav
-            const btn = navRef.current?.querySelector(`[data-term="${e.target.id}"]`) as HTMLElement | null
-            btn?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-          }
+          if (e.isIntersecting) setActiveTerm(e.target.id)
         }
       },
       { rootMargin: '-20% 0px -60% 0px', threshold: 0 },
@@ -725,30 +718,50 @@ export default function Lesson13KeyTerminologies() {
         </div>
       </div>
 
-      {/* Sticky nav */}
-      <div className="sticky top-0 z-30 -mx-4 px-4 sm:-mx-6 sm:px-6 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 mb-8">
-        <div ref={navRef} className="flex gap-2 overflow-x-auto py-3 scrollbar-hide">
-          {TERMS.map(t => {
-            const Icon = t.icon
-            const isActive = activeTerm === t.id
-            return (
-              <button
-                key={t.id}
-                data-term={t.id}
-                onClick={() => scrollTo(t.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
-                  isActive
-                    ? `${BG[t.color]} ${TEXT[t.color]} ${BORDER[t.color]} border`
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
-                }`}
-              >
-                <Icon className="w-3 h-3 flex-shrink-0" />
-                {t.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <div className="flex gap-6 items-start">
+
+        {/* Sticky sidebar — desktop only */}
+        <nav className="hidden lg:flex flex-col gap-1 w-48 flex-shrink-0 sticky top-20">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <BookOpen className="w-4 h-4 text-gray-400" />
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Key Terms</p>
+          </div>
+          {TERMS.map(t => (
+            <button
+              key={t.id}
+              onClick={() => scrollTo(t.id)}
+              className={`text-left text-xs px-3 py-2 rounded-lg font-medium transition-all ${
+                activeTerm === t.id
+                  ? `${BG[t.color]} ${TEXT[t.color]} font-semibold`
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              {t.shortLabel}
+            </button>
+          ))}
+        </nav>
+
+        {/* Content + mobile pill nav */}
+        <div className="flex-1 min-w-0">
+
+          {/* Mobile pill nav */}
+          <div className="lg:hidden mb-4 overflow-x-auto">
+            <div className="flex gap-2 pb-2 min-w-max">
+              {TERMS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => scrollTo(t.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full font-semibold whitespace-nowrap border transition-all ${
+                    activeTerm === t.id
+                      ? `${BG[t.color]} ${TEXT[t.color]} ${BORDER[t.color]}`
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-transparent'
+                  }`}
+                >
+                  {t.shortLabel}
+                </button>
+              ))}
+            </div>
+          </div>
 
       {/* Content sections */}
       <div className="space-y-16">
@@ -788,6 +801,9 @@ export default function Lesson13KeyTerminologies() {
           })}
         </div>
       </div>
+
+        </div>{/* closes flex-1 min-w-0 */}
+      </div>{/* closes flex gap-6 */}
     </div>
   )
 }

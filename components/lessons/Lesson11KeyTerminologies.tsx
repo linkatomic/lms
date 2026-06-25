@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   Link2, Image as ImageIcon, Trophy, ExternalLink, FileText,
   LinkIcon, Building2, ShoppingCart, AlertTriangle, Bot,
-  ChevronDown, ChevronUp, Play, Star,
+  ChevronDown, ChevronUp, Play, Star, BookOpen,
 } from 'lucide-react'
 
 // ─────────────────────────────────────────────────────────────
@@ -149,16 +149,16 @@ function TypeCard({ number, name, description, screenshot, screenshotAlt, screen
 // ─────────────────────────────────────────────────────────────
 
 const TERMS = [
-  { id: 'anchor-text',    label: 'Anchor Text',    icon: Link2,         color: 'blue'    },
-  { id: 'alt-text',       label: 'Alt Text',       icon: ImageIcon,     color: 'violet'  },
-  { id: 'authority-site', label: 'Authority Site', icon: Trophy,        color: 'amber'   },
-  { id: 'backlinks',      label: 'Backlinks',      icon: ExternalLink,  color: 'emerald' },
-  { id: 'blog',           label: 'Blog',           icon: FileText,      color: 'orange'  },
-  { id: 'broken-link',    label: 'Broken Link',    icon: LinkIcon,      color: 'red'     },
-  { id: 'b2b',            label: 'B2B',            icon: Building2,     color: 'indigo'  },
-  { id: 'b2c',            label: 'B2C',            icon: ShoppingCart,  color: 'pink'    },
-  { id: 'black-hat-seo',  label: 'Black Hat SEO',  icon: AlertTriangle, color: 'red'     },
-  { id: 'crawler',        label: 'Crawler',        icon: Bot,           color: 'teal'    },
+  { id: 'anchor-text',    label: 'Anchor Text',    shortLabel: 'Anchor Text',    icon: Link2,         color: 'blue'    },
+  { id: 'alt-text',       label: 'Alt Text',       shortLabel: 'Alt Text',       icon: ImageIcon,     color: 'violet'  },
+  { id: 'authority-site', label: 'Authority Site', shortLabel: 'Authority Site', icon: Trophy,        color: 'amber'   },
+  { id: 'backlinks',      label: 'Backlinks',      shortLabel: 'Backlinks',      icon: ExternalLink,  color: 'emerald' },
+  { id: 'blog',           label: 'Blog',           shortLabel: 'Blog',           icon: FileText,      color: 'orange'  },
+  { id: 'broken-link',    label: 'Broken Link',    shortLabel: 'Broken Link',    icon: LinkIcon,      color: 'red'     },
+  { id: 'b2b',            label: 'B2B',            shortLabel: 'B2B',            icon: Building2,     color: 'indigo'  },
+  { id: 'b2c',            label: 'B2C',            shortLabel: 'B2C',            icon: ShoppingCart,  color: 'pink'    },
+  { id: 'black-hat-seo',  label: 'Black Hat SEO',  shortLabel: 'Black Hat SEO',  icon: AlertTriangle, color: 'red'     },
+  { id: 'crawler',        label: 'Crawler',        shortLabel: 'Crawler',        icon: Bot,           color: 'teal'    },
 ]
 
 const NAV_COLORS: Record<string, string> = {
@@ -173,16 +173,37 @@ const NAV_COLORS: Record<string, string> = {
   teal:    'bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 ring-teal-400',
 }
 
+const BG: Record<string, string> = {
+  blue:    'bg-blue-100 dark:bg-blue-900/40',
+  violet:  'bg-violet-100 dark:bg-violet-900/40',
+  amber:   'bg-amber-100 dark:bg-amber-900/40',
+  emerald: 'bg-emerald-100 dark:bg-emerald-900/40',
+  orange:  'bg-orange-100 dark:bg-orange-900/40',
+  red:     'bg-red-100 dark:bg-red-900/40',
+  indigo:  'bg-indigo-100 dark:bg-indigo-900/40',
+  pink:    'bg-pink-100 dark:bg-pink-900/40',
+  teal:    'bg-teal-100 dark:bg-teal-900/40',
+}
+const TEXT: Record<string, string> = {
+  blue:    'text-blue-700 dark:text-blue-300',
+  violet:  'text-violet-700 dark:text-violet-300',
+  amber:   'text-amber-700 dark:text-amber-300',
+  emerald: 'text-emerald-700 dark:text-emerald-300',
+  orange:  'text-orange-700 dark:text-orange-300',
+  red:     'text-red-700 dark:text-red-300',
+  indigo:  'text-indigo-700 dark:text-indigo-300',
+  pink:    'text-pink-700 dark:text-pink-300',
+  teal:    'text-teal-700 dark:text-teal-300',
+}
+
 // ─────────────────────────────────────────────────────────────
 // Main component
 // ─────────────────────────────────────────────────────────────
 
 export default function Lesson11KeyTerminologies() {
   const [activeId, setActiveId] = useState('anchor-text')
-  const navRef = useRef<HTMLDivElement>(null)
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({})
 
-  // IntersectionObserver to highlight active term in nav
   useEffect(() => {
     const observers: IntersectionObserver[] = []
     TERMS.forEach(t => {
@@ -198,16 +219,6 @@ export default function Lesson11KeyTerminologies() {
     return () => observers.forEach(o => o.disconnect())
   }, [])
 
-  // Scroll active nav pill into view
-  useEffect(() => {
-    const nav = navRef.current
-    if (!nav) return
-    const activePill = nav.querySelector(`[data-term="${activeId}"]`) as HTMLElement
-    if (activePill) {
-      activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    }
-  }, [activeId])
-
   function scrollToTerm(id: string) {
     const el = sectionRefs.current[id]
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -218,7 +229,7 @@ export default function Lesson11KeyTerminologies() {
   }
 
   return (
-    <div className="space-y-0">
+    <div>
 
       {/* Hero */}
       <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 text-white rounded-3xl p-8 relative overflow-hidden mb-6">
@@ -243,31 +254,50 @@ export default function Lesson11KeyTerminologies() {
         </div>
       </div>
 
-      {/* Sticky term navigator */}
-      <div className="sticky top-0 z-30 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 -mx-4 px-4 py-3 mb-8">
-        <div ref={navRef} className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
-          {TERMS.map((t, i) => {
-            const Icon = t.icon
-            const isActive = activeId === t.id
-            return (
-              <button
-                key={t.id}
-                data-term={t.id}
-                onClick={() => scrollToTerm(t.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 transition-all ${
-                  isActive
-                    ? `${NAV_COLORS[t.color]} ring-2`
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                }`}
-              >
-                <span className="opacity-60">{i + 1}.</span>
-                <Icon className="w-3 h-3" />
-                {t.label}
-              </button>
-            )
-          })}
-        </div>
-      </div>
+      <div className="flex gap-6 items-start">
+
+        {/* Sticky sidebar — desktop only */}
+        <nav className="hidden lg:flex flex-col gap-1 w-48 flex-shrink-0 sticky top-20">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <BookOpen className="w-4 h-4 text-gray-400" />
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Key Terms</p>
+          </div>
+          {TERMS.map(t => (
+            <button
+              key={t.id}
+              onClick={() => scrollToTerm(t.id)}
+              className={`text-left text-xs px-3 py-2 rounded-lg font-medium transition-all ${
+                activeId === t.id
+                  ? `${BG[t.color]} ${TEXT[t.color]} font-semibold`
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`}
+            >
+              {t.shortLabel}
+            </button>
+          ))}
+        </nav>
+
+        {/* Content + mobile pill nav */}
+        <div className="flex-1 min-w-0">
+
+          {/* Mobile pill nav */}
+          <div className="lg:hidden mb-4 overflow-x-auto">
+            <div className="flex gap-2 pb-2 min-w-max">
+              {TERMS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => scrollToTerm(t.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full font-semibold whitespace-nowrap border transition-all ${
+                    activeId === t.id
+                      ? `${BG[t.color]} ${TEXT[t.color]} border-current`
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-transparent'
+                  }`}
+                >
+                  {t.shortLabel}
+                </button>
+              ))}
+            </div>
+          </div>
 
       {/* ────────────────────────────────────────────────── */}
       {/* 01. Anchor Text */}
@@ -824,6 +854,8 @@ export default function Lesson11KeyTerminologies() {
         </div>
       </div>
 
+        </div>{/* closes flex-1 min-w-0 */}
+      </div>{/* closes flex gap-6 */}
     </div>
   )
 }
