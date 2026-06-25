@@ -6,7 +6,7 @@ import { COURSE } from '@/lib/course-data'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 
-const BUILT_LESSONS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23])
+const BUILT_LESSONS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24])
 
 export default async function CoursePage() {
   const supabase = await createClient()
