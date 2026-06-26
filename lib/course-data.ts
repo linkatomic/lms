@@ -13,10 +13,10 @@ export const COURSE = {
       borderColor: 'border-indigo-200',
       lessons: [
         { id: 1, title: 'History & Overview', duration: null },
-        { id: 2, title: 'Vision, Mission & Core Values', duration: '5 Mins' },
-        { id: 3, title: 'Goals & Objectives', duration: '10 Mins' },
-        { id: 4, title: 'AMRYTT MEDIA Philosophy', duration: '5 Mins' },
-        { id: 5, title: 'Key Departments of AMRYTT MEDIA', duration: '5 Mins' },
+        { id: 2, title: 'Vision, Mission & Core Values', duration: null },
+        { id: 3, title: 'Goals & Objectives', duration: null },
+        { id: 4, title: 'AMRYTT MEDIA Philosophy', duration: null },
+        { id: 5, title: 'Key Departments of AMRYTT MEDIA', duration: null },
       ],
     },
     {

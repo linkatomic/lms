@@ -65,6 +65,10 @@ const LESSON_MODULE_MAP: Record<number, number> = {
   25: 3, 26: 3, 27: 3,
 }
 
+const MODULE_1_LESSONS = [1, 2, 3, 4, 5]
+const MODULE_2_LESSONS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
+const QUIZ_LESSON_IDS = new Set([10, 12, 14, 16, 18, 20, 22, 24, 27])
+
 export default async function LessonPage({ params }: { params: Promise<{ lessonId: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -76,6 +80,28 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
   const moduleId = LESSON_MODULE_MAP[id]
 
   if (!LessonComponent || !moduleId) notFound()
+
+  // Fetch progress to enforce module locking
+  if (moduleId > 1) {
+    const [{ data: progressRows }, { data: attemptRows }] = await Promise.all([
+      supabase.from('lesson_progress').select('lesson_id'),
+      supabase.from('quiz_attempts').select('lesson_id'),
+    ])
+    const done = new Set([
+      ...(progressRows ?? []).map((r: { lesson_id: number }) => r.lesson_id),
+      ...(attemptRows ?? []).map((r: { lesson_id: number }) => r.lesson_id),
+    ])
+    if (moduleId === 2 && !MODULE_1_LESSONS.every(l => done.has(l))) redirect('/course')
+    if (moduleId === 3 && !MODULE_2_LESSONS.every(l => done.has(l))) redirect('/course')
+  }
+
+  // Auto-mark content lessons as complete on visit (quizzes are tracked via quiz_attempts)
+  if (!QUIZ_LESSON_IDS.has(id)) {
+    await supabase.from('lesson_progress').upsert(
+      { user_id: user.id, lesson_id: id },
+      { onConflict: 'user_id,lesson_id', ignoreDuplicates: true }
+    )
+  }
 
   return (
     <LessonLayout moduleId={moduleId} lessonId={id}>
