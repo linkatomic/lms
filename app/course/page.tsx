@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BookOpen, Clock, ChevronRight, Lock } from 'lucide-react'
+import { BookOpen, Clock, ChevronRight, Lock, Shield } from 'lucide-react'
 import { COURSE } from '@/lib/course-data'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -12,6 +12,9 @@ export default async function CoursePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const isAdmin = profile?.role === 'admin'
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -25,6 +28,12 @@ export default async function CoursePage() {
             <span className="font-bold text-gray-900 dark:text-gray-50 hidden sm:block">Team Learning Hub</span>
           </Link>
           <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link href="/admin" className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900 transition">
+                <Shield className="w-3 h-3" />
+                Admin
+              </Link>
+            )}
             <ThemeToggle />
             <LogoutButton />
           </div>

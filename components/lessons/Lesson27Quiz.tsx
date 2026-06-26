@@ -707,6 +707,16 @@ function IntroScreen({ onStart, attempts, attemptsLoading, maxAttempts }: {
                     a.terminated ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' :
                     'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300'
                   }`}>{a.terminated ? 'Terminated' : a.passed ? 'Passed' : 'Failed'}</span>
+                  {a.review_status === 'pending' && (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                      Written: Pending Review
+                    </span>
+                  )}
+                  {a.review_status === 'reviewed' && (
+                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+                      Written: Reviewed ✓
+                    </span>
+                  )}
                   <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(a.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
@@ -1044,7 +1054,7 @@ export default function Lesson27Quiz() {
       if (q.type === 'mcq' && answers[i] !== undefined && parseInt(answers[i]) === (q as MCQQuestion).correct) mcqCorrect++
     })
     const passed = mcqCorrect >= PASS_MARK && !terminated
-    saveQuizAttempt({ lesson_id: LESSON_ID, score: mcqCorrect, total_questions: MCQ_COUNT, pass_mark: PASS_MARK, passed, terminated, time_used: TOTAL_TIME - timeLeft, answers: answers as Record<string, string> })
+    saveQuizAttempt({ lesson_id: LESSON_ID, score: mcqCorrect, total_questions: MCQ_COUNT, pass_mark: PASS_MARK, passed, terminated, time_used: TOTAL_TIME - timeLeft, answers: answers as Record<string, string>, review_status: 'pending' })
       .then(() => getQuizAttempts(LESSON_ID).then(setAttempts))
   }, [phase, answers, terminated, timeLeft])
 
