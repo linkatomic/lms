@@ -1,6 +1,9 @@
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { sendEmail, welcomeEmail } from '@/lib/gmail'
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
 export async function POST(req: Request) {
   // Verify the caller is an admin
@@ -68,6 +71,19 @@ export async function POST(req: Request) {
     await admin.auth.admin.deleteUser(created.user.id)
     return NextResponse.json({ error: 'Failed to create profile: ' + profileError.message }, { status: 500 })
   }
+
+  // Send welcome email (fire-and-forget — don't fail the request if email fails)
+  sendEmail(
+    email.trim().toLowerCase(),
+    `Welcome to Team Learning Hub — Your Login Details`,
+    welcomeEmail({
+      displayName: display_name.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+      loginUrl: `${APP_URL}/login`,
+      team: team ?? null,
+    }),
+  ).catch(err => console.error('[create-user] welcome email failed:', err))
 
   return NextResponse.json({
     success: true,

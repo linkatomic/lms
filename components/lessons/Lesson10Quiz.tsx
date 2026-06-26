@@ -703,7 +703,16 @@ export default function Lesson10Quiz() {
     })
     const passed = mcqCorrect === MCQ_QUESTIONS && !terminated
     saveQuizAttempt({ lesson_id: LESSON_ID, score: mcqCorrect, total_questions: MCQ_QUESTIONS, pass_mark: MCQ_QUESTIONS, passed, terminated, time_used: TOTAL_TIME - timeLeft, answers: answers as Record<string, string> })
-      .then(() => getQuizAttempts(LESSON_ID).then(setAttempts))
+      .then((saved) => {
+        if (saved) {
+          fetch('/api/notify/quiz-submitted', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonId: LESSON_ID, score: mcqCorrect, totalQuestions: MCQ_QUESTIONS, passed, needsReview: false }),
+          }).catch(() => {})
+        }
+        return getQuizAttempts(LESSON_ID).then(setAttempts)
+      })
   }, [phase, answers, terminated, timeLeft])
 
   const go = (dir: number) => {

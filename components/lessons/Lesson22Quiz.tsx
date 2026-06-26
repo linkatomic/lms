@@ -707,7 +707,16 @@ export default function Lesson22Quiz() {
     })
     const passed = correct === questions.length && !terminated
     saveQuizAttempt({ lesson_id: LESSON_ID, score: correct, total_questions: questions.length, pass_mark: questions.length, passed, terminated, time_used: TOTAL_TIME - timeLeft, answers: answers as Record<string, string> })
-      .then(() => getQuizAttempts(LESSON_ID).then(setAttempts))
+      .then((saved) => {
+        if (saved) {
+          fetch('/api/notify/quiz-submitted', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lessonId: LESSON_ID, score: correct, totalQuestions: questions.length, passed, needsReview: false }),
+          }).catch(() => {})
+        }
+        return getQuizAttempts(LESSON_ID).then(setAttempts)
+      })
   }, [phase, answers, terminated, timeLeft])
 
   const go = (dir: number) => {
