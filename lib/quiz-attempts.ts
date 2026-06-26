@@ -47,6 +47,7 @@ export async function saveQuizAttempt(data: SaveAttemptData): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser()
   const { error } = await supabase.from('quiz_attempts').insert([{
     ...data,
+    user_id: user?.id,
     user_email: user?.email ?? null,
     review_status: data.review_status ?? 'not_required',
   }])
