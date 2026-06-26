@@ -6,6 +6,7 @@ import {
   Clock, AlertTriangle, PenLine, FileText,
 } from 'lucide-react'
 import ReviewForm from '@/components/admin/ReviewForm'
+import { QUIZ_QUESTIONS } from '@/lib/quiz-questions'
 
 // ── L27 descriptive questions (Q31–Q40, zero-based indices 30–39) ─────────────
 const L27_DESC_QUESTIONS = [
@@ -200,95 +201,276 @@ export default async function AttemptDetailPage({
           </div>
         </div>
 
-        {/* MCQ answers */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <FileText className="w-4 h-4 text-indigo-500" />
-            <h2 className="font-bold text-gray-900 dark:text-gray-50 text-sm">MCQ Answers</h2>
-          </div>
-          <div className="space-y-2">
-            {Array.from({ length: attempt.total_questions }, (_, i) => {
-              const ua = answers[String(i)]
-              const mcqData = isL27 ? L27_MCQ_TEXTS[i] : null
-              const correct  = mcqData?.correct
-              const isCorrect  = ua !== undefined && correct !== undefined && parseInt(ua) === correct
-              const isWrong    = ua !== undefined && correct !== undefined && !isCorrect
-              const unanswered = ua === undefined
+        {/* All answers — MCQ, text, and descriptive */}
+        {(() => {
+          const questionDefs = isL27 ? null : QUIZ_QUESTIONS[attempt.lesson_id]
 
-              return (
-                <div
-                  key={i}
-                  className={`rounded-xl border p-3 ${
-                    unanswered ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50' :
-                    isCorrect  ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950' :
-                                 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 mt-0.5">
-                      {unanswered ? (
-                        <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600" />
-                      ) : isCorrect ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                      ) : (
-                        <XCircle className="w-4 h-4 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-0.5">Q{i + 1}</p>
-                      {mcqData && (
-                        <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 leading-snug">{mcqData.text}</p>
-                      )}
-                      <div className="flex items-center gap-3 text-xs">
-                        {ua !== undefined ? (
-                          <span className={isCorrect ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}>
-                            Selected: <strong>{OPTION_LETTERS[parseInt(ua)]}</strong>
-                            {mcqData && ` — ${mcqData.options[parseInt(ua)]}`}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 dark:text-gray-500">Not answered</span>
-                        )}
-                        {isWrong && mcqData && (
-                          <span className="text-emerald-700 dark:text-emerald-400">
-                            Correct: <strong>{OPTION_LETTERS[mcqData.correct]}</strong> — {mcqData.options[mcqData.correct]}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+          if (isL27) {
+            // ── L27: MCQ section (Q1–Q30) ──────────────────────────────────
+            return (
+              <>
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="w-4 h-4 text-indigo-500" />
+                    <h2 className="font-bold text-gray-900 dark:text-gray-50 text-sm">MCQ Answers</h2>
+                  </div>
+                  <div className="space-y-2">
+                    {Array.from({ length: attempt.total_questions }, (_, i) => {
+                      const ua = answers[String(i)]
+                      const mcqData = L27_MCQ_TEXTS[i]
+                      const correct = mcqData?.correct
+                      const isCorrect = ua !== undefined && correct !== undefined && parseInt(ua) === correct
+                      const isWrong = ua !== undefined && correct !== undefined && !isCorrect
+                      const unanswered = ua === undefined
+
+                      return (
+                        <div
+                          key={i}
+                          className={`rounded-xl border p-3 ${
+                            unanswered ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50' :
+                            isCorrect  ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950' :
+                                         'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 mt-0.5">
+                              {unanswered ? (
+                                <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600" />
+                              ) : isCorrect ? (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-red-500" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-0.5">Q{i + 1}</p>
+                              {mcqData && (
+                                <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 leading-snug">{mcqData.text}</p>
+                              )}
+                              <div className="flex items-center gap-3 text-xs flex-wrap">
+                                {ua !== undefined ? (
+                                  <span className={isCorrect ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}>
+                                    Selected: <strong>{OPTION_LETTERS[parseInt(ua)]}</strong>
+                                    {mcqData && ` — ${mcqData.options[parseInt(ua)]}`}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 dark:text-gray-500">Not answered</span>
+                                )}
+                                {isWrong && mcqData && (
+                                  <span className="text-emerald-700 dark:text-emerald-400">
+                                    Correct: <strong>{OPTION_LETTERS[mcqData.correct]}</strong> — {mcqData.options[mcqData.correct]}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
-              )
-            })}
-          </div>
-        </div>
 
-        {/* Written answers + review (L27 only) */}
-        {isL27 && (
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <PenLine className="w-4 h-4 text-amber-500" />
-              <h2 className="font-bold text-gray-900 dark:text-gray-50 text-sm">Written Answers</h2>
-              {isPending && (
-                <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 font-bold animate-pulse">
-                  Needs Review
-                </span>
-              )}
-              {isReviewed && (
-                <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 font-semibold">
-                  Review Complete
-                </span>
-              )}
+                {/* L27 Written answers + review */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <PenLine className="w-4 h-4 text-amber-500" />
+                    <h2 className="font-bold text-gray-900 dark:text-gray-50 text-sm">Written Answers</h2>
+                    {isPending && (
+                      <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 font-bold animate-pulse">
+                        Needs Review
+                      </span>
+                    )}
+                    {isReviewed && (
+                      <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 font-semibold">
+                        Review Complete
+                      </span>
+                    )}
+                  </div>
+                  <ReviewForm
+                    attemptId={attemptId}
+                    questions={L27_DESC_QUESTIONS}
+                    answers={answers}
+                    existingFeedback={attempt.admin_feedback ?? {}}
+                    existingScores={attempt.descriptive_scores ?? {}}
+                    alreadyReviewed={isReviewed}
+                  />
+                </div>
+              </>
+            )
+          }
+
+          if (questionDefs) {
+            // ── Other lessons: unified MCQ + text display ───────────────────
+            const textQuestions = questionDefs.filter(q => q.type === 'text')
+
+            return (
+              <>
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="w-4 h-4 text-indigo-500" />
+                    <h2 className="font-bold text-gray-900 dark:text-gray-50 text-sm">All Answers</h2>
+                  </div>
+                  <div className="space-y-2">
+                    {questionDefs.map((qDef) => {
+                      const ua = answers[String(qDef.index)]
+
+                      if (qDef.type === 'text') {
+                        const hasAnswer = ua !== undefined && ua.trim() !== ''
+                        return (
+                          <div
+                            key={qDef.index}
+                            className="rounded-xl border p-3 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 mt-0.5">
+                                <PenLine className="w-4 h-4 text-amber-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <p className="text-xs font-bold text-gray-400 dark:text-gray-500">Q{qDef.id}</p>
+                                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200">Text Answer</span>
+                                </div>
+                                <p className="text-xs text-gray-600 dark:text-gray-300 mb-2 leading-snug">{qDef.text}</p>
+                                {hasAnswer ? (
+                                  <p className="text-xs text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 rounded-lg px-3 py-2 border border-amber-200 dark:border-amber-700 whitespace-pre-wrap leading-relaxed">
+                                    {ua}
+                                  </p>
+                                ) : (
+                                  <p className="text-xs text-amber-600 dark:text-amber-400 italic">No answer provided</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      }
+
+                      // MCQ
+                      const correct = qDef.correct
+                      const isCorrect = ua !== undefined && correct !== undefined && parseInt(ua) === correct
+                      const isWrong = ua !== undefined && correct !== undefined && !isCorrect
+                      const unanswered = ua === undefined
+
+                      return (
+                        <div
+                          key={qDef.index}
+                          className={`rounded-xl border p-3 ${
+                            unanswered ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50' :
+                            isCorrect  ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950' :
+                                         'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 mt-0.5">
+                              {unanswered ? (
+                                <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600" />
+                              ) : isCorrect ? (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <XCircle className="w-4 h-4 text-red-500" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-0.5">Q{qDef.id}</p>
+                              <p className="text-xs text-gray-600 dark:text-gray-300 mb-1 leading-snug">{qDef.text}</p>
+                              <div className="flex items-center gap-3 text-xs flex-wrap">
+                                {ua !== undefined ? (
+                                  <span className={isCorrect ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}>
+                                    Selected: <strong>{OPTION_LETTERS[parseInt(ua)]}</strong>
+                                    {qDef.options && ` — ${qDef.options[parseInt(ua)]}`}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 dark:text-gray-500">Not answered</span>
+                                )}
+                                {isWrong && qDef.options && correct !== undefined && (
+                                  <span className="text-emerald-700 dark:text-emerald-400">
+                                    Correct: <strong>{OPTION_LETTERS[correct]}</strong> — {qDef.options[correct]}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Text question review form (for lessons with text questions, e.g. L10) */}
+                {textQuestions.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <PenLine className="w-4 h-4 text-amber-500" />
+                      <h2 className="font-bold text-gray-900 dark:text-gray-50 text-sm">Short Answer Review</h2>
+                      {isPending && (
+                        <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 font-bold animate-pulse">
+                          Needs Review
+                        </span>
+                      )}
+                      {isReviewed && (
+                        <span className="ml-auto text-xs px-2.5 py-1 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 font-semibold">
+                          Review Complete
+                        </span>
+                      )}
+                    </div>
+                    <ReviewForm
+                      attemptId={attemptId}
+                      questions={textQuestions.map(q => ({
+                        index: q.index,
+                        id: q.id,
+                        text: q.text,
+                        hint: q.hint ?? '',
+                      }))}
+                      answers={answers}
+                      existingFeedback={attempt.admin_feedback ?? {}}
+                      existingScores={attempt.descriptive_scores ?? {}}
+                      alreadyReviewed={isReviewed}
+                    />
+                  </div>
+                )}
+              </>
+            )
+          }
+
+          // Fallback: unknown lesson — show raw answers
+          return (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-indigo-500" />
+                <h2 className="font-bold text-gray-900 dark:text-gray-50 text-sm">MCQ Answers</h2>
+              </div>
+              <div className="space-y-2">
+                {Array.from({ length: attempt.total_questions }, (_, i) => {
+                  const ua = answers[String(i)]
+                  const unanswered = ua === undefined
+                  return (
+                    <div
+                      key={i}
+                      className={`rounded-xl border p-3 ${
+                        unanswered ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50' :
+                                     'border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-0.5">
+                          {unanswered
+                            ? <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-gray-600" />
+                            : <CheckCircle2 className="w-4 h-4 text-blue-500" />
+                          }
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-400 dark:text-gray-500 mb-0.5">Q{i + 1}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {unanswered ? 'Not answered' : `Selected: ${OPTION_LETTERS[parseInt(ua)] ?? ua}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-            <ReviewForm
-              attemptId={attemptId}
-              questions={L27_DESC_QUESTIONS}
-              answers={answers}
-              existingFeedback={attempt.admin_feedback ?? {}}
-              existingScores={attempt.descriptive_scores ?? {}}
-              alreadyReviewed={isReviewed}
-            />
-          </div>
-        )}
+          )
+        })()}
       </div>
     </div>
   )
