@@ -42,6 +42,16 @@ export async function getQuizAttempts(lessonId: number): Promise<QuizAttempt[]> 
   return (data ?? []) as QuizAttempt[]
 }
 
+export async function getAttemptLimit(lessonId: number): Promise<number> {
+  const supabase = createClient()
+  const { data } = await supabase
+    .from('quiz_attempt_limits')
+    .select('max_attempts')
+    .eq('lesson_id', lessonId)
+    .single()
+  return data?.max_attempts ?? 5
+}
+
 export async function saveQuizAttempt(data: SaveAttemptData): Promise<boolean> {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()

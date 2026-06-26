@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, ChevronLeft,
   ChevronRight, RotateCcw, Clock, Send, Trophy, PenLine,
 } from 'lucide-react'
-import { getQuizAttempts, saveQuizAttempt, type QuizAttempt } from '@/lib/quiz-attempts'
+import { getQuizAttempts, saveQuizAttempt, getAttemptLimit, type QuizAttempt } from '@/lib/quiz-attempts'
 
 // ─────────────────────────────────────
 // Constants
@@ -17,7 +17,7 @@ const PASS_MARK    = 21        // 70% of 30 MCQ
 const MCQ_COUNT    = 30
 const DESC_COUNT   = 10
 const LESSON_ID = 27
-const MAX_ATTEMPTS = 3
+const MAX_ATTEMPTS = 5
 
 type Phase = 'intro' | 'quiz' | 'results'
 
@@ -991,6 +991,7 @@ export default function Lesson27Quiz() {
 
   const [attempts, setAttempts]           = useState<QuizAttempt[]>([])
   const [attemptsLoading, setAttemptsLoading] = useState(true)
+  const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const savedRef = useRef(false)
 
   const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -998,8 +999,12 @@ export default function Lesson27Quiz() {
   const tabCountRef = useRef(0)
 
   useEffect(() => {
-    getQuizAttempts(LESSON_ID).then(data => {
+    Promise.all([
+      getQuizAttempts(LESSON_ID),
+      getAttemptLimit(LESSON_ID),
+    ]).then(([data, limit]) => {
       setAttempts(data)
+      setMaxAttempts(limit)
       setAttemptsLoading(false)
     })
   }, [])
@@ -1084,7 +1089,7 @@ export default function Lesson27Quiz() {
     setTabSwitches(0); setTerminated(false); setShowSubmit(false); tabCountRef.current = 0
   }
 
-  if (phase === 'intro')   return <IntroScreen onStart={() => setPhase('quiz')} attempts={attempts} attemptsLoading={attemptsLoading} maxAttempts={MAX_ATTEMPTS} />
+  if (phase === 'intro')   return <IntroScreen onStart={() => setPhase('quiz')} attempts={attempts} attemptsLoading={attemptsLoading} maxAttempts={maxAttempts} />
   if (phase === 'results') return <ResultsScreen answers={answers} terminated={terminated} timeUsed={TOTAL_TIME - timeLeft} onRetry={handleRetry} />
 
   return (

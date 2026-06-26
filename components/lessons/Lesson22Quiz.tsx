@@ -6,7 +6,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, ChevronLeft,
   ChevronRight, RotateCcw, Clock, BookOpen, Send,
 } from 'lucide-react'
-import { getQuizAttempts, saveQuizAttempt, type QuizAttempt } from '@/lib/quiz-attempts'
+import { getQuizAttempts, saveQuizAttempt, getAttemptLimit, type QuizAttempt } from '@/lib/quiz-attempts'
 
 // ─────────────────────────────────────
 // Constants
@@ -14,7 +14,7 @@ import { getQuizAttempts, saveQuizAttempt, type QuizAttempt } from '@/lib/quiz-a
 const TOTAL_TIME = 15 * 60   // 15 minutes for 20 questions
 const MAX_TAB_SWITCHES = 3
 const LESSON_ID = 22
-const MAX_ATTEMPTS = 3
+const MAX_ATTEMPTS = 5
 
 type Phase = 'intro' | 'quiz' | 'results'
 
@@ -638,6 +638,7 @@ export default function Lesson22Quiz() {
 
   const [attempts, setAttempts]           = useState<QuizAttempt[]>([])
   const [attemptsLoading, setAttemptsLoading] = useState(true)
+  const [maxAttempts, setMaxAttempts] = useState(MAX_ATTEMPTS)
   const savedRef = useRef(false)
 
   const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -645,8 +646,12 @@ export default function Lesson22Quiz() {
   const tabCountRef = useRef(0)
 
   useEffect(() => {
-    getQuizAttempts(LESSON_ID).then(data => {
+    Promise.all([
+      getQuizAttempts(LESSON_ID),
+      getAttemptLimit(LESSON_ID),
+    ]).then(([data, limit]) => {
       setAttempts(data)
+      setMaxAttempts(limit)
       setAttemptsLoading(false)
     })
   }, [])
@@ -723,7 +728,7 @@ export default function Lesson22Quiz() {
     setTabSwitches(0); setTerminated(false); setShowSubmit(false); tabCountRef.current = 0
   }
 
-  if (phase === 'intro')   return <IntroScreen onStart={() => setPhase('quiz')} attempts={attempts} attemptsLoading={attemptsLoading} maxAttempts={MAX_ATTEMPTS} />
+  if (phase === 'intro')   return <IntroScreen onStart={() => setPhase('quiz')} attempts={attempts} attemptsLoading={attemptsLoading} maxAttempts={maxAttempts} />
   if (phase === 'results') return <ResultsScreen answers={answers} terminated={terminated} timeUsed={TOTAL_TIME - timeLeft} onRetry={handleRetry} />
 
   return (

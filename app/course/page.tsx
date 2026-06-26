@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BookOpen, Clock, ChevronRight, Lock, Shield } from 'lucide-react'
+import { BookOpen, Clock, ChevronRight, Lock, Shield, BarChart2 } from 'lucide-react'
 import { COURSE } from '@/lib/course-data'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
@@ -28,6 +28,10 @@ export default async function CoursePage() {
             <span className="font-bold text-gray-900 dark:text-gray-50 hidden sm:block">Team Learning Hub</span>
           </Link>
           <div className="flex items-center gap-2">
+            <Link href="/my-results" className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition">
+              <BarChart2 className="w-3 h-3" />
+              My Results
+            </Link>
             {isAdmin && (
               <Link href="/admin" className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-950 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 hover:bg-violet-100 dark:hover:bg-violet-900 transition">
                 <Shield className="w-3 h-3" />

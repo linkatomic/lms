@@ -2,6 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronRight, CheckCircle2, XCircle, Clock, Shield, PenLine, AlertTriangle } from 'lucide-react'
+import AttemptLimitEditor from '@/components/admin/AttemptLimitEditor'
 
 const QUIZ_NAMES: Record<number, string> = {
   10: 'Test 1 — Digital Marketing Basics',
@@ -29,11 +30,11 @@ export default async function QuizAttemptListPage({
   if (!QUIZ_NAMES[lessonId]) notFound()
 
   const admin = createAdminClient()
-  const { data: attempts } = await admin
-    .from('quiz_attempts')
-    .select('*')
-    .eq('lesson_id', lessonId)
-    .order('created_at', { ascending: false })
+  const [{ data: attempts }, { data: limitRows }] = await Promise.all([
+    admin.from('quiz_attempts').select('*').eq('lesson_id', lessonId).order('created_at', { ascending: false }),
+    admin.from('quiz_attempt_limits').select('user_id,max_attempts').eq('lesson_id', lessonId),
+  ])
+  const limitByUser = Object.fromEntries((limitRows ?? []).map(r => [r.user_id, r.max_attempts]))
 
   const hasWritten = lessonId === 27
   const pendingCount = attempts?.filter(a => a.review_status === 'pending').length ?? 0
@@ -97,10 +98,15 @@ export default async function QuizAttemptListPage({
                   <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-950 flex items-center justify-center text-sm font-bold text-indigo-600 dark:text-indigo-400 flex-shrink-0">
                     {userKey.charAt(0).toUpperCase()}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 dark:text-gray-50 text-sm">{userKey}</p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500">{userAttempts!.length} attempt{userAttempts!.length !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">{userAttempts!.length} attempt{userAttempts!.length !== 1 ? 's' : ''} taken</p>
                   </div>
+                  <AttemptLimitEditor
+                    userId={userAttempts![0].user_id}
+                    lessonId={lessonId}
+                    currentLimit={limitByUser[userAttempts![0].user_id] ?? 5}
+                  />
                 </div>
 
                 {/* Attempts */}
