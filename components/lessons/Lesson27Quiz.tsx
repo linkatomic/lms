@@ -226,10 +226,14 @@ const questions: Question[] = [
     explanation: "Guest posting on reputable niche-relevant websites is a legitimate White Hat SEO technique. Keyword stuffing and cloaking (showing different content to users vs search engines) are both Black Hat techniques that violate Google's guidelines." },
 
   { id: 20, type: 'mcq',
-    text: "Which of the following is NOT one of the three special content niche filters on the GUESTPOSTLINKS platform?",
-    options: ["Pharmacy", "Casino / Gaming", "Technology / Software"],
-    correct: 2,
-    explanation: "GUESTPOSTLINKS has exactly three special niche filters: Pharmacy, Casino/Gaming, and Foreign Language. Technology/Software is NOT one of the three — it falls under general niche publishing." },
+    text: "What is Page Authority (PA) and how is it different from Domain Authority (DA)?",
+    options: [
+      "The total number of backlinks pointing to a specific page on a website",
+      "A Moz metric (0–100) that predicts how well a specific PAGE will rank — unlike DA which scores the entire website",
+      "Google's internal scoring system for ranking individual web pages",
+    ],
+    correct: 1,
+    explanation: "Page Authority (PA) is a Moz metric that predicts how well a single, specific PAGE will rank in search results. Domain Authority (DA) scores the whole website. A strong individual page on a low-DA site can still rank well for specific keywords — which is why both metrics matter in link building." },
 
   /* ── EXTRA MCQ (Q21–Q30) ─────────────────────────────────────── */
 
