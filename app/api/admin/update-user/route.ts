@@ -12,20 +12,24 @@ export async function PATCH(req: Request) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  let body: { userId?: string; team?: string | null; enrolled_courses?: string[] }
+  let body: { userId?: string; team?: string | null; enrolled_courses?: string[]; display_name?: string }
   try { body = await req.json() } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { userId, team, enrolled_courses } = body
+  const { userId, team, enrolled_courses, display_name } = body
   if (!userId) return NextResponse.json({ error: 'userId is required' }, { status: 400 })
   if (team !== undefined && team !== null && !VALID_TEAMS.includes(team)) {
     return NextResponse.json({ error: 'Invalid team value' }, { status: 400 })
+  }
+  if (display_name !== undefined && !display_name.trim()) {
+    return NextResponse.json({ error: 'Display name cannot be empty' }, { status: 400 })
   }
 
   const update: Record<string, unknown> = {}
   if (team !== undefined) update.team = team
   if (enrolled_courses !== undefined) update.enrolled_courses = enrolled_courses.length ? enrolled_courses : ['foundation']
+  if (display_name !== undefined) update.display_name = display_name.trim()
 
   const admin = createAdminClient()
   const { error } = await admin.from('profiles').update(update).eq('id', userId)

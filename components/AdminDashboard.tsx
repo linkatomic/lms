@@ -6,7 +6,7 @@ import {
   Users, UserPlus, Mail, Lock, Eye, EyeOff,
   CheckCircle2, AlertCircle, RefreshCw, Shield, User,
   Clock, Search, X, ChevronDown, Pencil, Save, BookOpen,
-  Tag,
+  Tag, Trash2, TriangleAlert,
 } from 'lucide-react'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -251,15 +251,19 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
 
 // ─── Inline Edit Row ──────────────────────────────────────────────────────────
 
-function EditUserPanel({ user, onSaved, onCancel }: {
+function EditUserPanel({ user, onSaved, onDeleted, onCancel }: {
   user: UserRow
   onSaved: (updated: Partial<UserRow>) => void
+  onDeleted: () => void
   onCancel: () => void
 }) {
+  const [displayName, setDisplayName]         = useState(user.display_name)
   const [team, setTeam]                       = useState(user.team ?? '')
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>(user.enrolled_courses ?? ['foundation'])
   const [saving, setSaving]                   = useState(false)
   const [error, setError]                     = useState('')
+  const [confirmDelete, setConfirmDelete]     = useState(false)
+  const [deleting, setDeleting]               = useState(false)
 
   function toggleCourse(id: string) {
     setEnrolledCourses(prev =>
@@ -268,17 +272,30 @@ function EditUserPanel({ user, onSaved, onCancel }: {
   }
 
   async function handleSave() {
-    setSaving(true)
-    setError('')
+    if (!displayName.trim()) { setError('Display name cannot be empty.'); return }
+    setSaving(true); setError('')
     const res = await fetch('/api/admin/update-user', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id, team: team || null, enrolled_courses: enrolledCourses }),
+      body: JSON.stringify({ userId: user.id, display_name: displayName.trim(), team: team || null, enrolled_courses: enrolledCourses }),
     })
     const data = await res.json()
     setSaving(false)
     if (!res.ok) { setError(data.error ?? 'Failed to save.'); return }
-    onSaved({ team: team || null, enrolled_courses: enrolledCourses })
+    onSaved({ display_name: displayName.trim(), team: team || null, enrolled_courses: enrolledCourses })
+  }
+
+  async function handleDelete() {
+    setDeleting(true); setError('')
+    const res = await fetch('/api/admin/delete-user', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    })
+    const data = await res.json()
+    setDeleting(false)
+    if (!res.ok) { setError(data.error ?? 'Failed to delete.'); setConfirmDelete(false); return }
+    onDeleted()
   }
 
   return (
@@ -287,8 +304,57 @@ function EditUserPanel({ user, onSaved, onCancel }: {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
     >
-      <td colSpan={5} className="px-6 py-4 bg-violet-50 dark:bg-violet-950/30 border-b border-violet-100 dark:border-violet-900">
+      <td colSpan={6} className="px-6 py-5 bg-violet-50 dark:bg-violet-950/30 border-b border-violet-100 dark:border-violet-900">
+
+        {/* Delete confirmation overlay */}
+        <AnimatePresence>
+          {confirmDelete && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.97 }}
+              className="mb-4 flex items-start gap-3 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 rounded-xl p-4"
+            >
+              <TriangleAlert className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-bold text-red-700 dark:text-red-300">Delete {user.display_name || user.email}?</p>
+                <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">
+                  This permanently removes their account and cannot be undone.
+                </p>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <button onClick={handleDelete} disabled={deleting}
+                  className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition"
+                >
+                  {deleting ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                  {deleting ? 'Deleting…' : 'Yes, Delete'}
+                </button>
+                <button onClick={() => setConfirmDelete(false)}
+                  className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="flex flex-col sm:flex-row gap-4 items-start">
+
+          {/* Display name */}
+          <div className="flex-1 space-y-1 min-w-[160px]">
+            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Display Name</p>
+            <div className="relative">
+              <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <input
+                type="text"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                placeholder="Full name"
+                className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 transition"
+              />
+            </div>
+          </div>
 
           {/* Team selector */}
           <div className="flex-1 space-y-1">
@@ -325,9 +391,9 @@ function EditUserPanel({ user, onSaved, onCancel }: {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col gap-2 justify-start pt-5">
-            {error && <p className="text-xs text-red-600 dark:text-red-400 max-w-xs">{error}</p>}
-            <div className="flex gap-2">
+          <div className="flex flex-col gap-2 justify-start pt-5 flex-shrink-0">
+            {error && <p className="text-xs text-red-600 dark:text-red-400 max-w-[200px]">{error}</p>}
+            <div className="flex gap-2 flex-wrap">
               <button onClick={handleSave} disabled={saving}
                 className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition"
               >
@@ -339,11 +405,156 @@ function EditUserPanel({ user, onSaved, onCancel }: {
               >
                 <X className="w-3.5 h-3.5" /> Cancel
               </button>
+              <button
+                onClick={() => { setConfirmDelete(true); setError('') }}
+                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400 px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-800 hover:border-red-400 dark:hover:border-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" /> Delete
+              </button>
             </div>
           </div>
         </div>
       </td>
     </motion.tr>
+  )
+}
+
+// ─── Mobile Edit Panel ────────────────────────────────────────────────────────
+
+function MobileEditPanel({ user, onSaved, onDeleted, onCancel }: {
+  user: UserRow
+  onSaved: (updated: Partial<UserRow>) => void
+  onDeleted: () => void
+  onCancel: () => void
+}) {
+  const [displayName, setDisplayName]         = useState(user.display_name)
+  const [team, setTeam]                       = useState(user.team ?? '')
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>(user.enrolled_courses ?? ['foundation'])
+  const [saving, setSaving]                   = useState(false)
+  const [error, setError]                     = useState('')
+  const [confirmDelete, setConfirmDelete]     = useState(false)
+  const [deleting, setDeleting]               = useState(false)
+
+  function toggleCourse(id: string) {
+    setEnrolledCourses(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id])
+  }
+
+  async function handleSave() {
+    if (!displayName.trim()) { setError('Display name cannot be empty.'); return }
+    setSaving(true); setError('')
+    const res = await fetch('/api/admin/update-user', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id, display_name: displayName.trim(), team: team || null, enrolled_courses: enrolledCourses }),
+    })
+    const data = await res.json()
+    setSaving(false)
+    if (!res.ok) { setError(data.error ?? 'Failed to save.'); return }
+    onSaved({ display_name: displayName.trim(), team: team || null, enrolled_courses: enrolledCourses })
+  }
+
+  async function handleDelete() {
+    setDeleting(true); setError('')
+    const res = await fetch('/api/admin/delete-user', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    })
+    const data = await res.json()
+    setDeleting(false)
+    if (!res.ok) { setError(data.error ?? 'Failed to delete.'); setConfirmDelete(false); return }
+    onDeleted()
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      className="bg-violet-50 dark:bg-violet-950/30 border-t border-violet-100 dark:border-violet-900 px-4 py-4 space-y-3"
+    >
+      {confirmDelete && (
+        <div className="flex items-start gap-2.5 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-800 rounded-xl p-3">
+          <TriangleAlert className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-xs font-bold text-red-700 dark:text-red-300">Delete this account?</p>
+            <p className="text-xs text-red-600/70 dark:text-red-400/70 mt-0.5">This is permanent and cannot be undone.</p>
+          </div>
+          <div className="flex gap-1.5 flex-shrink-0">
+            <button onClick={handleDelete} disabled={deleting}
+              className="flex items-center gap-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition"
+            >
+              {deleting ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+              {deleting ? '…' : 'Delete'}
+            </button>
+            <button onClick={() => setConfirmDelete(false)} className="text-xs text-gray-500 dark:text-gray-400 px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">No</button>
+          </div>
+        </div>
+      )}
+
+      {/* Name */}
+      <div className="space-y-1">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Display Name</p>
+        <div className="relative">
+          <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+          <input type="text" value={displayName} onChange={e => setDisplayName(e.target.value)}
+            className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 transition"
+          />
+        </div>
+      </div>
+
+      {/* Team */}
+      <div className="space-y-1">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Team</p>
+        <div className="relative">
+          <select value={team} onChange={e => setTeam(e.target.value)}
+            className="w-full pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-50 text-sm focus:outline-none appearance-none"
+          >
+            <option value="">— No team —</option>
+            {TEAMS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+          </select>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Courses */}
+      <div className="space-y-1">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Course Access</p>
+        <div className="flex flex-wrap gap-2">
+          {AVAILABLE_COURSES.map(course => (
+            <label key={course.id} className={`flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-xl border cursor-pointer transition ${
+              enrolledCourses.includes(course.id)
+                ? 'border-violet-300 dark:border-violet-700 bg-violet-100 dark:bg-violet-900 text-violet-700 dark:text-violet-300'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500'
+            }`}>
+              <input type="checkbox" checked={enrolledCourses.includes(course.id)} onChange={() => toggleCourse(course.id)} className="accent-violet-600 w-3.5 h-3.5" />
+              <BookOpen className="w-3 h-3" />{course.label}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
+
+      <div className="flex gap-2 flex-wrap">
+        <button onClick={handleSave} disabled={saving}
+          className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-60 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition"
+        >
+          {saving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+          Save
+        </button>
+        <button onClick={onCancel}
+          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 transition"
+        >
+          <X className="w-3.5 h-3.5" /> Cancel
+        </button>
+        <button onClick={() => { setConfirmDelete(true); setError('') }}
+          className="flex items-center gap-1 text-xs text-red-500 px-3 py-2.5 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30 transition"
+        >
+          <Trash2 className="w-3.5 h-3.5" /> Delete
+        </button>
+      </div>
+    </motion.div>
   )
 }
 
@@ -366,6 +577,11 @@ function UsersTable({ users: initialUsers, loading, onRefresh }: {
 
   function handleSaved(userId: string, updated: Partial<UserRow>) {
     setUsers(prev => prev.map(u => u.id === userId ? { ...u, ...updated } : u))
+    setEditingId(null)
+  }
+
+  function handleDeleted(userId: string) {
+    setUsers(prev => prev.filter(u => u.id !== userId))
     setEditingId(null)
   }
 
@@ -521,6 +737,7 @@ function UsersTable({ users: initialUsers, loading, onRefresh }: {
                             key={`edit-${u.id}`}
                             user={u}
                             onSaved={updated => handleSaved(u.id, updated)}
+                            onDeleted={() => handleDeleted(u.id)}
                             onCancel={() => setEditingId(null)}
                           />
                         )}
@@ -569,26 +786,13 @@ function UsersTable({ users: initialUsers, loading, onRefresh }: {
 
                 {/* Mobile edit panel */}
                 {editingId === u.id && (
-                  <div className="ml-12 space-y-3 pt-2">
-                    <div>
-                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Team</p>
-                      <div className="relative">
-                        <select defaultValue={u.team ?? ''} id={`team-mobile-${u.id}`}
-                          className="w-full pl-3 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-50 text-sm focus:outline-none appearance-none"
-                        >
-                          <option value="">— No team —</option>
-                          {TEAMS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setEditingId(null)}
-                      className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  <MobileEditPanel
+                    key={`edit-mobile-${u.id}`}
+                    user={u}
+                    onSaved={updated => handleSaved(u.id, updated)}
+                    onDeleted={() => handleDeleted(u.id)}
+                    onCancel={() => setEditingId(null)}
+                  />
                 )}
               </div>
             ))}
