@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BookOpen, Shield, ArrowLeft, FileText, Clock } from 'lucide-react'
+import { BookOpen, Shield, ArrowLeft, FileText, Clock, Mail } from 'lucide-react'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 import AdminDashboard from '@/components/AdminDashboard'
@@ -115,7 +115,46 @@ export default async function AdminPage() {
 
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
-        <QuizAttemptsCard />
+        {/* Quick action cards row */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          <QuizAttemptsCard />
+
+          {/* Email Templates card */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+              <div className="w-9 h-9 bg-indigo-50 dark:bg-indigo-950 rounded-xl flex items-center justify-center">
+                <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 dark:text-gray-50">Email Templates</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Preview all automated notification emails</p>
+              </div>
+            </div>
+            <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+              <div className="flex gap-6">
+                {[
+                  { label: 'Welcome', icon: '👋' },
+                  { label: 'Quiz Score', icon: '📊' },
+                  { label: 'Review Alert', icon: '📝' },
+                  { label: 'Results', icon: '🏆' },
+                ].map(t => (
+                  <div key={t.label} className="text-center">
+                    <p className="text-lg mb-0.5">{t.icon}</p>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{t.label}</p>
+                  </div>
+                ))}
+              </div>
+              <Link
+                href="/admin/email-preview"
+                className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-sm flex-shrink-0"
+              >
+                <Mail className="w-4 h-4" />
+                Preview Emails
+              </Link>
+            </div>
+          </div>
+        </div>
+
         <AdminDashboard adminEmail={user.email!} />
       </main>
     </div>
