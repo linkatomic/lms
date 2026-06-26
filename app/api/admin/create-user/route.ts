@@ -19,17 +19,22 @@ export async function POST(req: Request) {
   }
 
   // Parse and validate body
-  let body: { display_name?: string; email?: string; password?: string }
+  let body: { display_name?: string; email?: string; password?: string; team?: string; enrolled_courses?: string[] }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
-  const { display_name, email, password } = body
+  const { display_name, email, password, team, enrolled_courses } = body
 
   if (!display_name?.trim() || !email?.trim() || !password) {
     return NextResponse.json({ error: 'Display name, email, and password are all required.' }, { status: 400 })
+  }
+
+  const VALID_TEAMS = ['outreach', 'order_processing', 'content', 'seo', 'live_chat']
+  if (team && !VALID_TEAMS.includes(team)) {
+    return NextResponse.json({ error: 'Invalid team value.' }, { status: 400 })
   }
 
   if (password.length < 6) {
@@ -50,9 +55,13 @@ export async function POST(req: Request) {
   }
 
   // Insert their profile row
-  const { error: profileError } = await admin
-    .from('profiles')
-    .insert({ id: created.user.id, display_name: display_name.trim(), role: 'user' })
+  const { error: profileError } = await admin.from('profiles').insert({
+    id: created.user.id,
+    display_name: display_name.trim(),
+    role: 'user',
+    team: team ?? null,
+    enrolled_courses: enrolled_courses?.length ? enrolled_courses : ['foundation'],
+  })
 
   if (profileError) {
     // Roll back: remove the auth user so we don't leave orphans

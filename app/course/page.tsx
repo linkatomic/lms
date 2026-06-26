@@ -20,11 +20,15 @@ export default async function CoursePage() {
   if (!user) redirect('/login')
 
   const [{ data: profile }, { data: progressRows }, { data: attemptRows }] = await Promise.all([
-    supabase.from('profiles').select('role').eq('id', user.id).single(),
+    supabase.from('profiles').select('role, enrolled_courses').eq('id', user.id).single(),
     supabase.from('lesson_progress').select('lesson_id'),
     supabase.from('quiz_attempts').select('lesson_id'),
   ])
   const isAdmin = profile?.role === 'admin'
+
+  // Check enrollment — redirect if not enrolled in this course
+  const enrolledCourses: string[] = profile?.enrolled_courses ?? ['foundation']
+  if (!enrolledCourses.includes('foundation')) redirect('/dashboard')
 
   const completedLessons = new Set<number>([
     ...(progressRows ?? []).map((r: { lesson_id: number }) => r.lesson_id),

@@ -28,14 +28,19 @@ export async function GET() {
 
   if (authError) return NextResponse.json({ error: authError.message }, { status: 500 })
 
-  const merged = (authData?.users ?? []).map(u => ({
-    id: u.id,
-    email: u.email ?? '',
-    display_name: profiles?.find(p => p.id === u.id)?.display_name ?? '',
-    role: profiles?.find(p => p.id === u.id)?.role ?? 'user',
-    created_at: u.created_at,
-    last_sign_in: u.last_sign_in_at ?? null,
-  }))
+  const merged = (authData?.users ?? []).map(u => {
+    const p = profiles?.find(p => p.id === u.id)
+    return {
+      id: u.id,
+      email: u.email ?? '',
+      display_name: p?.display_name ?? '',
+      role: p?.role ?? 'user',
+      team: p?.team ?? null,
+      enrolled_courses: p?.enrolled_courses ?? ['foundation'],
+      created_at: u.created_at,
+      last_sign_in: u.last_sign_in_at ?? null,
+    }
+  })
 
   // Sort: admins first, then alphabetically by email
   merged.sort((a, b) => {
