@@ -6,6 +6,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, ChevronLeft,
   ChevronRight, RotateCcw, Clock, Send, Trophy, PenLine,
 } from 'lucide-react'
+import { getQuizAttempts, saveQuizAttempt, type QuizAttempt } from '@/lib/quiz-attempts'
 
 // ─────────────────────────────────────
 // Constants
@@ -15,6 +16,8 @@ const MAX_TAB_SWITCHES = 3
 const PASS_MARK    = 21        // 70% of 30 MCQ
 const MCQ_COUNT    = 30
 const DESC_COUNT   = 10
+const LESSON_ID = 27
+const MAX_ATTEMPTS = 3
 
 type Phase = 'intro' | 'quiz' | 'results'
 
@@ -630,7 +633,9 @@ function QGrid({ current, answers, onJump }: {
 // ─────────────────────────────────────
 // Intro Screen
 // ─────────────────────────────────────
-function IntroScreen({ onStart }: { onStart: () => void }) {
+function IntroScreen({ onStart, attempts, attemptsLoading, maxAttempts }: {
+  onStart: () => void; attempts: QuizAttempt[]; attemptsLoading: boolean; maxAttempts: number
+}) {
   const meta = [
     { label: 'Duration', value: '60 Mins' },
     { label: 'MCQ', value: '30' },
@@ -683,11 +688,50 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
         </ul>
       </div>
 
-      <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onStart}
-        className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white font-bold py-4 rounded-2xl text-base shadow-lg flex items-center justify-center gap-2">
-        <Trophy className="w-4 h-4" />
-        Start Final Test &#8594;
-      </motion.button>
+      {/* Past Attempts */}
+      {attemptsLoading ? (
+        <div className="h-16 animate-pulse bg-gray-100 dark:bg-gray-800 rounded-2xl" />
+      ) : attempts.length > 0 && (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm p-5">
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-3">Your Attempts</p>
+          <div className="space-y-2">
+            {attempts.map((a, i) => (
+              <div key={a.id} className="flex items-center justify-between text-sm">
+                <span className="text-gray-500 dark:text-gray-400">Attempt {attempts.length - i}</span>
+                <div className="flex items-center gap-3">
+                  <span className={`font-bold ${a.passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
+                    {a.score}/{a.total_questions}
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                    a.passed ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300' :
+                    a.terminated ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300' :
+                    'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300'
+                  }`}>{a.terminated ? 'Terminated' : a.passed ? 'Passed' : 'Failed'}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">{new Date(a.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {attempts.length < maxAttempts && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+              {maxAttempts - attempts.length} attempt{maxAttempts - attempts.length !== 1 ? 's' : ''} remaining
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Start button — disabled when max attempts reached */}
+      {attempts.length >= maxAttempts ? (
+        <div className="w-full py-4 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-bold text-base text-center">
+          Maximum attempts reached ({maxAttempts}/{maxAttempts})
+        </div>
+      ) : (
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={onStart}
+          className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 text-white font-bold py-4 rounded-2xl text-base shadow-lg flex items-center justify-center gap-2">
+          <Trophy className="w-4 h-4" />
+          Start Final Test &#8594;
+        </motion.button>
+      )}
     </motion.div>
   )
 }
@@ -792,7 +836,7 @@ function ResultsScreen({ answers, terminated, timeUsed, onRetry }: {
                       </div>
                     )}
                     {unanswered && <p className="text-xs text-gray-400 dark:text-gray-500">Not answered</p>}
-                    {(isWrong || unanswered) && (
+                    {isWrong && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 italic">{q.explanation}</p>
                     )}
                   </div>
@@ -935,9 +979,20 @@ export default function Lesson27Quiz() {
   const [showSubmit, setShowSubmit] = useState(false)
   const [direction, setDirection] = useState(1)
 
+  const [attempts, setAttempts]           = useState<QuizAttempt[]>([])
+  const [attemptsLoading, setAttemptsLoading] = useState(true)
+  const savedRef = useRef(false)
+
   const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null)
   const warnRef     = useRef<ReturnType<typeof setInterval> | null>(null)
   const tabCountRef = useRef(0)
+
+  useEffect(() => {
+    getQuizAttempts(LESSON_ID).then(data => {
+      setAttempts(data)
+      setAttemptsLoading(false)
+    })
+  }, [])
 
   useEffect(() => {
     if (phase !== 'quiz') return
@@ -981,6 +1036,18 @@ export default function Lesson27Quiz() {
     return () => clearInterval(warnRef.current!)
   }, [warningOpen])
 
+  useEffect(() => {
+    if (phase !== 'results' || savedRef.current) return
+    savedRef.current = true
+    let mcqCorrect = 0
+    questions.slice(0, MCQ_COUNT).forEach((q, i) => {
+      if (q.type === 'mcq' && answers[i] !== undefined && parseInt(answers[i]) === (q as MCQQuestion).correct) mcqCorrect++
+    })
+    const passed = mcqCorrect >= PASS_MARK && !terminated
+    saveQuizAttempt({ lesson_id: LESSON_ID, score: mcqCorrect, total_questions: MCQ_COUNT, pass_mark: PASS_MARK, passed, terminated, time_used: TOTAL_TIME - timeLeft, answers: answers as Record<string, string> })
+      .then(() => getQuizAttempts(LESSON_ID).then(setAttempts))
+  }, [phase, answers, terminated, timeLeft])
+
   const go = (dir: number) => {
     const next = currentQ + dir
     if (next < 0 || next >= questions.length) return
@@ -1002,11 +1069,12 @@ export default function Lesson27Quiz() {
   const q = questions[currentQ]
 
   const handleRetry = () => {
+    savedRef.current = false
     setPhase('intro'); setCurrentQ(0); setAnswers({}); setTimeLeft(TOTAL_TIME)
     setTabSwitches(0); setTerminated(false); setShowSubmit(false); tabCountRef.current = 0
   }
 
-  if (phase === 'intro')   return <IntroScreen onStart={() => setPhase('quiz')} />
+  if (phase === 'intro')   return <IntroScreen onStart={() => setPhase('quiz')} attempts={attempts} attemptsLoading={attemptsLoading} maxAttempts={MAX_ATTEMPTS} />
   if (phase === 'results') return <ResultsScreen answers={answers} terminated={terminated} timeUsed={TOTAL_TIME - timeLeft} onRetry={handleRetry} />
 
   return (
