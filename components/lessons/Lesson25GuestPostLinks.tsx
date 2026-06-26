@@ -198,18 +198,18 @@ function Philosophy() {
         </p>
       </div>
 
-      {/* 40,000+ stat */}
+      {/* 60,000+ stat */}
       <div className="bg-gradient-to-br from-violet-600 to-indigo-700 rounded-2xl p-6 mb-5 text-white relative overflow-hidden">
         <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
         <div className="relative flex items-center gap-6">
           <div className="text-center flex-shrink-0">
-            <p className="text-4xl sm:text-5xl font-black">40,000+</p>
+            <p className="text-4xl sm:text-5xl font-black">60,000+</p>
             <p className="text-violet-200 text-xs font-semibold uppercase tracking-widest mt-1">Publishers</p>
           </div>
           <div>
             <p className="font-bold text-lg mb-1">Massive Publisher Network</p>
             <p className="text-violet-100 text-sm leading-relaxed">
-              With over 40,000 publishers listed on our platform, we serve both
+              With over 60,000 publishers listed on our platform, we serve both
               SEO agencies and direct clients with a diverse range of high-quality
               backlink solutions across every niche.
             </p>
@@ -396,7 +396,7 @@ function OurTeam() {
         </p>
         <div className="grid grid-cols-3 gap-3 text-center">
           {[
-            { val: '40,000+', lbl: 'Publishers'  },
+            { val: '60,000+', lbl: 'Publishers'  },
             { val: '100%',    lbl: 'White-Hat'   },
             { val: '24/7',    lbl: 'Support'     },
           ].map(s => (
@@ -456,7 +456,7 @@ export default function Lesson25GuestPostLinks() {
             culture that makes it all work.
           </p>
           <div className="mt-4 flex items-center gap-4 text-sm text-emerald-100 flex-wrap">
-            <span>🔗 40,000+ Publishers</span>
+            <span>🔗 60,000+ Publishers</span>
             <span>🛡️ 100% White-Hat</span>
             <span>📈 SEO &amp; Content Marketing</span>
           </div>
@@ -533,7 +533,7 @@ export default function Lesson25GuestPostLinks() {
             <div className="grid sm:grid-cols-2 gap-3">
               {[
                 { Icon: Globe,      color: 'blue',    label: 'What is GUESTPOSTLINKS.NET?',           desc: 'Platform overview, role as mediator, what it provides' },
-                { Icon: BookOpen,   color: 'violet',  label: 'GUESTPOSTLINKS Philosophy',             desc: '40,000+ publishers, serving agencies and direct clients' },
+                { Icon: BookOpen,   color: 'violet',  label: 'GUESTPOSTLINKS Philosophy',             desc: '60,000+ publishers, serving agencies and direct clients' },
                 { Icon: TrendingUp, color: 'emerald', label: 'Empowering Growth Through Partnerships', desc: 'Trust, transparency, shared commitment to success' },
                 { Icon: Award,      color: 'amber',   label: 'What Sets Us Apart',                    desc: 'Quality, pricing, speed, and cutting-edge technology' },
                 { Icon: Users,      color: 'teal',    label: 'Our Team',                              desc: 'Collaboration, innovation, and continuous improvement' },
