@@ -6,12 +6,13 @@ import { COURSE } from '@/lib/course-data'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 
-const BUILT_LESSONS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27])
+const BUILT_LESSONS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28])
 
 const MODULE_LESSON_IDS: Record<number, number[]> = {
   1: [1, 2, 3, 4, 5],
   2: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
   3: [25, 26, 27],
+  4: [28],
 }
 
 export default async function CoursePage() {
@@ -42,6 +43,7 @@ export default async function CoursePage() {
     1: true,
     2: mod1Done,
     3: mod1Done && mod2Done,
+    4: true, // Playground is always available
   }
 
   // Progress counts per module
@@ -87,7 +89,7 @@ export default async function CoursePage() {
           <div className="mt-6 flex items-center gap-6 text-sm text-indigo-200">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4" />
-              <span>3 Modules</span>
+              <span>4 Modules</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4" />

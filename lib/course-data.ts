@@ -61,5 +61,17 @@ export const COURSE = {
         { id: 27, title: 'Test: Final Assessment', duration: null, isQuiz: true },
       ],
     },
+    {
+      id: 4,
+      title: 'SEO Interactive Playground',
+      emoji: '🎮',
+      color: 'from-rose-500 to-orange-500',
+      lightColor: 'bg-rose-50',
+      borderColor: 'border-rose-200',
+      alwaysUnlocked: true,
+      lessons: [
+        { id: 28, title: 'Interactive SEO Playground — 8 Stations', duration: null },
+      ],
+    },
   ],
 }

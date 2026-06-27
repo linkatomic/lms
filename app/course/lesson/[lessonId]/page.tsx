@@ -49,6 +49,7 @@ const LESSON_COMPONENTS: Record<number, React.ComponentType> = {
   25: dynamic(() => import('@/components/lessons/Lesson25GuestPostLinks'),   { loading: LessonSkeleton }),
   26: dynamic(() => import('@/components/lessons/Lesson26KeyServices'),      { loading: LessonSkeleton }),
   27: dynamic(() => import('@/components/lessons/Lesson27Quiz'),             { loading: LessonSkeleton }),
+  28: dynamic(() => import('@/components/lessons/Lesson28Playground'),       { loading: LessonSkeleton }),
 }
 
 const LESSON_MODULE_MAP: Record<number, number> = {
@@ -56,7 +57,10 @@ const LESSON_MODULE_MAP: Record<number, number> = {
   6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2, 13: 2, 14: 2, 15: 2,
   16: 2, 17: 2, 18: 2, 19: 2, 20: 2, 21: 2, 22: 2, 23: 2, 24: 2,
   25: 3, 26: 3, 27: 3,
+  28: 4,
 }
+
+const ALWAYS_UNLOCKED_MODULES = new Set([4])
 
 const MODULE_1_LESSONS = [1, 2, 3, 4, 5]
 const MODULE_2_LESSONS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
@@ -77,8 +81,8 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
   const moduleId = LESSON_MODULE_MAP[id]
   if (!LessonComponent || !moduleId) notFound()
 
-  // Module lock guard — only fetch DB if needed (Module 1 is always open)
-  if (moduleId > 1) {
+  // Module lock guard — only fetch DB if needed (Module 1 and always-unlocked modules skip)
+  if (moduleId > 1 && !ALWAYS_UNLOCKED_MODULES.has(moduleId)) {
     const [{ data: progressRows }, { data: attemptRows }] = await Promise.all([
       supabase.from('lesson_progress').select('lesson_id'),
       supabase.from('quiz_attempts').select('lesson_id'),
