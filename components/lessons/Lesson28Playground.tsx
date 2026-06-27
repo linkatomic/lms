@@ -540,12 +540,21 @@ function Station4({ onComplete, completed, score }: StationProps) {
   const [keyword, setKeyword] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const words = text.trim().split(/\s+/).filter(Boolean)
-  const wordCount = words.length
-  const kwCount = keyword.trim()
-    ? words.filter(w => w.toLowerCase().replace(/[^a-z0-9]/g, '') === keyword.trim().toLowerCase()).length
+  const wordCount = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0
+
+  // Count phrase occurrences using regex — supports multi-word keywords
+  const kwCount = (() => {
+    const kw = keyword.trim()
+    if (!kw || !text.trim()) return 0
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    return (text.match(new RegExp(escaped, 'gi')) || []).length
+  })()
+
+  // Each occurrence of a multi-word keyword occupies N words of the text
+  const kwWordCount = keyword.trim() ? keyword.trim().split(/\s+/).filter(Boolean).length : 1
+  const density = wordCount > 0 && kwCount > 0
+    ? parseFloat(((kwCount * kwWordCount / wordCount) * 100).toFixed(2))
     : 0
-  const density = wordCount > 0 && keyword.trim() ? parseFloat(((kwCount / wordCount) * 100).toFixed(2)) : 0
 
   const zone = density === 0 ? 'none' : density < 1 ? 'low' : density <= 3 ? 'good' : density <= 5 ? 'risky' : 'stuffed'
 
@@ -1208,10 +1217,14 @@ const CORRECT_ORDER = [1, 7, 2, 4, 3, 5, 8, 6] // by SEO value desc
 function Station8({ onComplete, completed, score }: StationProps) {
   const [ranking, setRanking] = useState<number[]>(BACKLINKS.map(b => b.id))
   const [submitted, setSubmitted] = useState(false)
-  const [dragIdx, setDragIdx] = useState<number | null>(null)
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
+  // Use refs so drag state never triggers re-renders during the drag
+  const dragStartIdx = useRef<number | null>(null)
+  const rankingRef = useRef(ranking)
+  rankingRef.current = ranking
 
   const moveItem = (fromIdx: number, toIdx: number) => {
-    const next = [...ranking]
+    const next = [...rankingRef.current]
     const [item] = next.splice(fromIdx, 1)
     next.splice(toIdx, 0, item)
     setRanking(next)
@@ -1219,7 +1232,6 @@ function Station8({ onComplete, completed, score }: StationProps) {
 
   const handleSubmit = () => {
     setSubmitted(true)
-    // score by position accuracy: -1 per position wrong
     let pts = BACKLINKS.length
     ranking.forEach((id, i) => { if (CORRECT_ORDER[i] !== id) pts-- })
     if (!completed) onComplete(Math.max(0, Math.round((pts / BACKLINKS.length) * 100)))
@@ -1239,7 +1251,7 @@ function Station8({ onComplete, completed, score }: StationProps) {
           <span className="text-2xl">🏆</span>
           <h3 className="text-xl font-bold">Station 8: Backlink Quality Arena</h3>
         </div>
-        <p className="text-orange-100 text-sm">Rank these 8 backlinks from most to least valuable. Drag cards to reorder. Consider DR, link type, placement, and anchor text.</p>
+        <p className="text-orange-100 text-sm">Rank these 8 backlinks from most to least valuable. Drag cards to reorder, or use the ▲▼ buttons. Consider DR, link type, placement, and anchor text.</p>
       </div>
 
       <div className="bg-amber-50 dark:bg-amber-950 rounded-xl border border-amber-100 dark:border-amber-800 p-4 text-xs text-amber-700 dark:text-amber-300">
@@ -1257,19 +1269,45 @@ function Station8({ onComplete, completed, score }: StationProps) {
           const link = getLink(id)
           const correctPos = CORRECT_ORDER.indexOf(id)
           const isCorrectPos = submitted && correctPos === idx
-          const isWrongPos = submitted && correctPos !== idx
+          const isDragOver = !submitted && dragOverIdx === idx
+
           return (
-            <motion.div key={id} layout transition={{ duration: 0.2 }}
+            <div
+              key={id}
               draggable={!submitted}
-              onDragStart={() => setDragIdx(idx)}
-              onDragOver={e => { e.preventDefault(); if (dragIdx !== null && dragIdx !== idx) moveItem(dragIdx, idx) }}
-              onDrop={() => setDragIdx(null)}
-              onDragEnd={() => setDragIdx(null)}
-              className={`bg-white dark:bg-gray-900 rounded-xl border p-4 cursor-grab active:cursor-grabbing transition ${
+              onDragStart={e => {
+                dragStartIdx.current = idx
+                e.dataTransfer.effectAllowed = 'move'
+              }}
+              onDragOver={e => {
+                e.preventDefault()
+                e.dataTransfer.dropEffect = 'move'
+                // Only update visual indicator — don't move items yet
+                if (dragOverIdx !== idx) setDragOverIdx(idx)
+              }}
+              onDrop={e => {
+                e.preventDefault()
+                // Move only on drop — this prevents the jitter
+                if (dragStartIdx.current !== null && dragStartIdx.current !== idx) {
+                  moveItem(dragStartIdx.current, idx)
+                }
+                dragStartIdx.current = null
+                setDragOverIdx(null)
+              }}
+              onDragEnd={() => {
+                dragStartIdx.current = null
+                setDragOverIdx(null)
+              }}
+              className={`bg-white dark:bg-gray-900 rounded-xl border p-4 transition select-none ${
                 submitted
-                  ? isCorrectPos ? 'border-emerald-300 dark:border-emerald-700' : 'border-red-300 dark:border-red-700'
-                  : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
-              }`}>
+                  ? isCorrectPos
+                    ? 'border-emerald-300 dark:border-emerald-700'
+                    : 'border-red-300 dark:border-red-700'
+                  : isDragOver
+                  ? 'border-orange-400 dark:border-orange-500 bg-orange-50 dark:bg-orange-950'
+                  : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 cursor-grab active:cursor-grabbing'
+              }`}
+            >
               <div className="flex items-center gap-3">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 ${
                   submitted
@@ -1290,9 +1328,23 @@ function Station8({ onComplete, completed, score }: StationProps) {
                     </p>
                   )}
                 </div>
-                {!submitted && <span className="text-gray-300 dark:text-gray-600 text-xl flex-shrink-0">⠿</span>}
+                {/* Arrow buttons as fallback for touch/mobile */}
+                {!submitted && (
+                  <div className="flex flex-col gap-0.5 flex-shrink-0">
+                    <button
+                      onClick={() => idx > 0 && moveItem(idx, idx - 1)}
+                      disabled={idx === 0}
+                      className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-20 rounded transition text-xs"
+                    >▲</button>
+                    <button
+                      onClick={() => idx < ranking.length - 1 && moveItem(idx, idx + 1)}
+                      disabled={idx === ranking.length - 1}
+                      className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-20 rounded transition text-xs"
+                    >▼</button>
+                  </div>
+                )}
               </div>
-            </motion.div>
+            </div>
           )
         })}
       </div>
