@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ChevronLeft, ChevronRight, BookOpen, CheckCircle2 } from 'lucide-react'
 import { COURSE } from '@/lib/course-data'
 import ThemeToggle from '@/components/ThemeToggle'
+import LessonPresenceTracker from '@/components/LessonPresenceTracker'
 
 interface LessonLayoutProps {
   moduleId: number
@@ -24,6 +25,9 @@ export default function LessonLayout({ moduleId, lessonId, children }: LessonLay
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      {/* Silent presence heartbeat — tells admin tracker which lesson is open */}
+      <LessonPresenceTracker lessonId={lessonId} />
+
       {/* Top nav */}
       <nav className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">

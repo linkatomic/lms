@@ -2,10 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BookOpen, Shield, ArrowLeft, FileText, Clock, Mail } from 'lucide-react'
+import { BookOpen, Shield, ArrowLeft, FileText, Clock, Mail, Radio } from 'lucide-react'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 import AdminDashboard from '@/components/AdminDashboard'
+import LiveTracker from '@/components/admin/LiveTracker'
 
 async function QuizAttemptsCard() {
   const admin = createAdminClient()
@@ -116,8 +117,34 @@ export default async function AdminPage() {
       {/* Main content */}
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Quick action cards row */}
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid sm:grid-cols-3 gap-4">
           <QuizAttemptsCard />
+
+          {/* Live Tracker card */}
+          <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+              <div className="w-9 h-9 bg-emerald-50 dark:bg-emerald-950 rounded-xl flex items-center justify-center">
+                <Radio className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="font-bold text-gray-900 dark:text-gray-50">Live Tracker</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">See who&apos;s online and on which lesson</p>
+              </div>
+            </div>
+            <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-sm text-gray-500 dark:text-gray-400">Updates in real-time</span>
+              </div>
+              <Link
+                href="/admin/tracker"
+                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-sm flex-shrink-0"
+              >
+                <Radio className="w-4 h-4" />
+                View Tracker
+              </Link>
+            </div>
+          </div>
 
           {/* Email Templates card */}
           <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">
@@ -154,6 +181,9 @@ export default async function AdminPage() {
             </div>
           </div>
         </div>
+
+        {/* Inline live tracker */}
+        <LiveTracker />
 
         <AdminDashboard adminEmail={user.email!} />
       </main>
