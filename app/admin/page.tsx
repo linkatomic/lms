@@ -7,6 +7,7 @@ import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 import AdminDashboard from '@/components/AdminDashboard'
 import LiveTracker from '@/components/admin/LiveTracker'
+import ShareableLinks from '@/components/admin/ShareableLinks'
 
 async function QuizAttemptsCard() {
   const admin = createAdminClient()
@@ -184,6 +185,9 @@ export default async function AdminPage() {
 
         {/* Inline live tracker */}
         <LiveTracker />
+
+        {/* Shareable lesson links */}
+        <ShareableLinks />
 
         <AdminDashboard adminEmail={user.email!} />
       </main>
