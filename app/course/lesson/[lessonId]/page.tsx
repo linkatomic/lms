@@ -91,10 +91,11 @@ export default async function LessonPage({ params }: { params: Promise<{ lessonI
     if (moduleId === 3 && !MODULE_2_LESSONS.every(l => done.has(l))) redirect('/course')
   }
 
-  // Mark lesson as read — fire without blocking the render
+  // Mark lesson as read before rendering — void/fire-and-forget is unreliable
+  // in serverless (Vercel kills the function once the response is sent).
   // (quiz progress is tracked separately via quiz_attempts)
   if (!QUIZ_LESSON_IDS.has(id)) {
-    void supabase.from('lesson_progress').upsert(
+    await supabase.from('lesson_progress').upsert(
       { user_id: user.id, lesson_id: id },
       { onConflict: 'user_id,lesson_id', ignoreDuplicates: true },
     )
