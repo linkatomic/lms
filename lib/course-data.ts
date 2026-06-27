@@ -59,6 +59,7 @@ export const COURSE = {
         { id: 25, title: 'GUESTPOSTLINKS.NET & Its Philosophy', duration: null },
         { id: 26, title: 'Key Services: Link Building & Local SEO', duration: null },
         { id: 27, title: 'Test: Final Assessment', duration: null, isQuiz: true },
+        { id: 28, title: 'SOP: Payment Methods, Fees & How to Handle Them', duration: null },
       ],
     },
     {
@@ -70,7 +71,7 @@ export const COURSE = {
       borderColor: 'border-rose-200',
       alwaysUnlocked: true,
       lessons: [
-        { id: 28, title: 'Interactive SEO Playground — 8 Stations', duration: null },
+        { id: 29, title: 'Interactive SEO Playground — 8 Stations', duration: null },
       ],
     },
   ],

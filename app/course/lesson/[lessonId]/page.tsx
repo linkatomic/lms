@@ -49,15 +49,16 @@ const LESSON_COMPONENTS: Record<number, React.ComponentType> = {
   25: dynamic(() => import('@/components/lessons/Lesson25GuestPostLinks'),   { loading: LessonSkeleton }),
   26: dynamic(() => import('@/components/lessons/Lesson26KeyServices'),      { loading: LessonSkeleton }),
   27: dynamic(() => import('@/components/lessons/Lesson27Quiz'),             { loading: LessonSkeleton }),
-  28: dynamic(() => import('@/components/lessons/Lesson28Playground'),       { loading: LessonSkeleton }),
+  28: dynamic(() => import('@/components/lessons/Lesson28PaymentSOP'),       { loading: LessonSkeleton }),
+  29: dynamic(() => import('@/components/lessons/Lesson28Playground'),       { loading: LessonSkeleton }),
 }
 
 const LESSON_MODULE_MAP: Record<number, number> = {
   1: 1, 2: 1, 3: 1, 4: 1, 5: 1,
   6: 2, 7: 2, 8: 2, 9: 2, 10: 2, 11: 2, 12: 2, 13: 2, 14: 2, 15: 2,
   16: 2, 17: 2, 18: 2, 19: 2, 20: 2, 21: 2, 22: 2, 23: 2, 24: 2,
-  25: 3, 26: 3, 27: 3,
-  28: 4,
+  25: 3, 26: 3, 27: 3, 28: 3,
+  29: 4,
 }
 
 const ALWAYS_UNLOCKED_MODULES = new Set([4])

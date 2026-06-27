@@ -6,13 +6,13 @@ import { COURSE } from '@/lib/course-data'
 import LogoutButton from '@/components/LogoutButton'
 import ThemeToggle from '@/components/ThemeToggle'
 
-const BUILT_LESSONS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28])
+const BUILT_LESSONS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
 
 const MODULE_LESSON_IDS: Record<number, number[]> = {
   1: [1, 2, 3, 4, 5],
   2: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
-  3: [25, 26, 27],
-  4: [28],
+  3: [25, 26, 27, 28],
+  4: [29],
 }
 
 export default async function CoursePage() {
