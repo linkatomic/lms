@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 interface StationProps { onComplete: (score: number) => void; completed: boolean; score: number }
 
-const MAX_SCORES = [100, 100, 100, 100, 100, 100, 100, 100]
+const MAX_SCORES = [100, 100, 100, 100, 100, 100, 100, 100, 100]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Station 1 — The Link Lab (Dofollow / Nofollow)
@@ -1366,6 +1366,359 @@ function Station8({ onComplete, completed, score }: StationProps) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Station 9 — Inbound vs Outbound: Link Direction Lab
+// ─────────────────────────────────────────────────────────────────────────────
+
+type LinkDir = 'inbound' | 'outbound'
+
+const SITES_S9 = [
+  { id: 'newswire', name: 'NewsWire.com',      emoji: '📡', desc: 'A news website',            color: 'violet'  },
+  { id: 'techblog', name: 'TechBlog.com',       emoji: '📰', desc: 'The guest post publisher',  color: 'blue'    },
+  { id: 'gpl',      name: 'GuestPostLinks.net', emoji: '🔗', desc: "Your client's site",        color: 'emerald' },
+  { id: 'wiki',     name: 'Wikipedia.org',      emoji: '📚', desc: 'Authority reference site',  color: 'gray'    },
+]
+
+const CONNECTIONS_S9 = [
+  {
+    id: 'a', from: 'newswire', to: 'techblog',
+    context: 'NewsWire published an article that references and links to TechBlog',
+  },
+  {
+    id: 'b', from: 'techblog', to: 'gpl',
+    context: 'AMRYTT publishes a guest post on TechBlog with a link to the client (GuestPostLinks.net)',
+  },
+  {
+    id: 'c', from: 'techblog', to: 'wiki',
+    context: "TechBlog's article links to Wikipedia as an authority source",
+  },
+]
+
+const SITE_COLORS_S9: Record<string, { bg: string; border: string; text: string; ring: string }> = {
+  violet:  { bg: 'bg-violet-50 dark:bg-violet-950',   border: 'border-violet-200 dark:border-violet-800',   text: 'text-violet-700 dark:text-violet-300',   ring: 'ring-violet-400'  },
+  blue:    { bg: 'bg-blue-50 dark:bg-blue-950',       border: 'border-blue-200 dark:border-blue-800',       text: 'text-blue-700 dark:text-blue-300',       ring: 'ring-blue-400'    },
+  emerald: { bg: 'bg-emerald-50 dark:bg-emerald-950', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-400' },
+  gray:    { bg: 'bg-gray-50 dark:bg-gray-900',       border: 'border-gray-200 dark:border-gray-700',       text: 'text-gray-600 dark:text-gray-400',       ring: 'ring-gray-400'    },
+}
+
+const SCENARIOS_S9 = [
+  {
+    situation: 'TechBlog.com publishes a guest post containing a link pointing to GuestPostLinks.net.',
+    question: "For GuestPostLinks.net, this link is...",
+    answer: 'inbound' as LinkDir,
+    why: "GuestPostLinks.net is RECEIVING the link from TechBlog. Any link pointing INTO your site from another domain = inbound link (also called a backlink). This is exactly what AMRYTT builds for clients.",
+  },
+  {
+    situation: 'The same article on TechBlog.com contains a link pointing to GuestPostLinks.net.',
+    question: "For TechBlog.com, that exact same link is...",
+    answer: 'outbound' as LinkDir,
+    why: "TechBlog.com is SENDING the link OUT to another domain. The same link is inbound for the receiver AND outbound for the sender — simultaneously. One link, two names.",
+  },
+  {
+    situation: 'AMRYTT publishes 10 guest posts across different websites, each containing a link to a client website.',
+    question: "The client website has just gained 10 new...",
+    answer: 'inbound' as LinkDir,
+    why: "10 links pointing INTO the client site = 10 new inbound links (backlinks). This is AMRYTT's core deliverable — every guest post creates one inbound link for the client.",
+  },
+  {
+    situation: 'A guest post article cites Wikipedia, BBC News, and Investopedia by linking to them as sources.',
+    question: "From the publisher's website perspective, all 3 source links are...",
+    answer: 'outbound' as LinkDir,
+    why: "The publisher's site is linking OUT to 3 other domains. Every link that leaves your domain is an outbound link — regardless of how reputable the destination is.",
+  },
+  {
+    situation: 'Google Search Console shows 820 backlinks pointing to GuestPostLinks.net.',
+    question: "All 820 backlinks are... for GuestPostLinks.net.",
+    answer: 'inbound' as LinkDir,
+    why: '"Backlinks" and "inbound links" are the same thing — links pointing INTO your site from other domains. This is the #1 metric link building campaigns aim to grow.',
+  },
+  {
+    situation: "Forbes.com publishes an article and includes a link to a client's website.",
+    question: "For Forbes.com, the link to the client site is...",
+    answer: 'outbound' as LinkDir,
+    why: "Forbes is PLACING the link in their content, pointing OUT to another domain. For Forbes.com, that's an outbound link — they are the sender.",
+  },
+  {
+    situation: "Forbes.com publishes an article and includes a link to a client's website.",
+    question: "For the client's website, the Forbes link is...",
+    answer: 'inbound' as LinkDir,
+    why: "The client's site is RECEIVING the link from Forbes. An inbound link from Forbes.com (DR 94) is one of the most valuable backlinks possible — the receiver always calls it inbound.",
+  },
+  {
+    situation: "AMRYTT's own website has a resources page linking to Ahrefs, SEMrush, and Google Search Console.",
+    question: "From AMRYTT's website's perspective, all 3 tool links are...",
+    answer: 'outbound' as LinkDir,
+    why: "AMRYTT.com is linking OUT to 3 external tools. These are outbound links. Outbound links to quality resources don't hurt you — they can signal credibility to Google.",
+  },
+]
+
+function Station9({ onComplete, completed, score }: StationProps) {
+  const [selectedSite, setSelectedSite] = useState<string>('techblog')
+  const [current, setCurrent]           = useState(0)
+  const [answers, setAnswers]           = useState<(LinkDir | null)[]>(Array(SCENARIOS_S9.length).fill(null))
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [finished, setFinished]         = useState(false)
+
+  const q = SCENARIOS_S9[current]
+
+  const getLinkStatus = (conn: typeof CONNECTIONS_S9[0]) => {
+    if (selectedSite === conn.to)   return 'inbound'
+    if (selectedSite === conn.from) return 'outbound'
+    return 'neutral'
+  }
+
+  const selectedSiteData = SITES_S9.find(s => s.id === selectedSite)
+  const inboundCount  = CONNECTIONS_S9.filter(c => c.to   === selectedSite).length
+  const outboundCount = CONNECTIONS_S9.filter(c => c.from === selectedSite).length
+
+  const handleAnswer = (choice: LinkDir) => {
+    if (answers[current] !== null) return
+    const newAnswers = [...answers]
+    newAnswers[current] = choice
+    setAnswers(newAnswers)
+    setShowFeedback(true)
+    setTimeout(() => {
+      setShowFeedback(false)
+      if (current < SCENARIOS_S9.length - 1) {
+        setCurrent(c => c + 1)
+      } else {
+        setFinished(true)
+        if (!completed) {
+          const correct = newAnswers.filter((a, i) => a === SCENARIOS_S9[i].answer).length
+          onComplete(Math.round((correct / SCENARIOS_S9.length) * 100))
+        }
+      }
+    }, 1900)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-fuchsia-600 to-violet-700 text-white rounded-2xl p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <span className="text-2xl">🧭</span>
+          <h3 className="text-xl font-bold">Station 9: Link Direction Lab</h3>
+        </div>
+        <p className="text-fuchsia-100 text-sm">Master inbound vs outbound links — the most confused concept in SEO. Same link, two different names. It all depends on your perspective.</p>
+      </div>
+
+      {/* Core concept */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-3">
+        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">The core insight</p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="bg-emerald-50 dark:bg-emerald-950 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
+            <p className="font-bold text-emerald-800 dark:text-emerald-200 text-sm mb-1">↙ Inbound Link</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300">A link coming INTO your website from another website. Also called a backlink. This is what AMRYTT builds for clients.</p>
+          </div>
+          <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
+            <p className="font-bold text-orange-800 dark:text-orange-200 text-sm mb-1">↗ Outbound Link</p>
+            <p className="text-xs text-orange-700 dark:text-orange-300">A link going OUT from your website to another website. Every link you place in your content is outbound from your site.</p>
+          </div>
+        </div>
+        <div className="bg-fuchsia-50 dark:bg-fuchsia-950 border border-fuchsia-100 dark:border-fuchsia-800 rounded-xl px-4 py-3">
+          <p className="text-sm text-fuchsia-800 dark:text-fuchsia-200 font-semibold">⚡ Key Rule: Every single link is BOTH at the same time — outbound for the site that placed it, inbound for the site it points to. Your perspective determines the name.</p>
+        </div>
+      </div>
+
+      {/* Interactive perspective switcher */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-4">
+        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">🔬 Perspective Lab — click any website to see its link types</p>
+
+        {/* Site selector */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {SITES_S9.map(site => {
+            const c = SITE_COLORS_S9[site.color]
+            const isSelected = selectedSite === site.id
+            return (
+              <button key={site.id}
+                onClick={() => setSelectedSite(site.id)}
+                className={`text-left rounded-xl border p-3 transition ${
+                  isSelected ? `${c.bg} ${c.border} ring-2 ${c.ring}` : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base">{site.emoji}</span>
+                  <span className={`text-xs font-bold truncate ${isSelected ? c.text : 'text-gray-500 dark:text-gray-400'}`}>{site.name}</span>
+                </div>
+                <p className="text-[10px] text-gray-400">{site.desc}</p>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Inbound / outbound count for selected site */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-emerald-50 dark:bg-emerald-950 rounded-xl border border-emerald-200 dark:border-emerald-800 p-3 text-center">
+            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{inboundCount}</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 font-semibold">Inbound link{inboundCount !== 1 ? 's' : ''}</p>
+            <p className="text-[10px] text-emerald-600 dark:text-emerald-500 mt-0.5">links coming IN to {selectedSiteData?.name}</p>
+          </div>
+          <div className="bg-orange-50 dark:bg-orange-950 rounded-xl border border-orange-200 dark:border-orange-800 p-3 text-center">
+            <p className="text-2xl font-black text-orange-600 dark:text-orange-400">{outboundCount}</p>
+            <p className="text-xs text-orange-700 dark:text-orange-300 font-semibold">Outbound link{outboundCount !== 1 ? 's' : ''}</p>
+            <p className="text-[10px] text-orange-600 dark:text-orange-500 mt-0.5">links going OUT from {selectedSiteData?.name}</p>
+          </div>
+        </div>
+
+        {/* Connection list */}
+        <div className="space-y-2">
+          {CONNECTIONS_S9.map(conn => {
+            const status   = getLinkStatus(conn)
+            const fromSite = SITES_S9.find(s => s.id === conn.from)!
+            const toSite   = SITES_S9.find(s => s.id === conn.to)!
+            return (
+              <div key={conn.id}
+                className={`rounded-xl border p-4 transition ${
+                  status === 'inbound'  ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/50' :
+                  status === 'outbound' ? 'border-orange-200 dark:border-orange-800 bg-orange-50/50 dark:bg-orange-950/50' :
+                  'border-gray-100 dark:border-gray-800'
+                }`}
+              >
+                <div className="flex items-center gap-2 flex-wrap mb-2">
+                  <span>{fromSite.emoji}</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{fromSite.name}</span>
+                  <span className={`text-lg font-black ${
+                    status === 'outbound' ? 'text-orange-500' :
+                    status === 'inbound'  ? 'text-emerald-500' : 'text-gray-300 dark:text-gray-600'
+                  }`}>→</span>
+                  <span>{toSite.emoji}</span>
+                  <span className="text-sm font-bold text-gray-700 dark:text-gray-300">{toSite.name}</span>
+                  {status === 'inbound' && (
+                    <span className="ml-auto text-xs font-black px-2.5 py-1 rounded-full bg-emerald-500 text-white">↙ INBOUND</span>
+                  )}
+                  {status === 'outbound' && (
+                    <span className="ml-auto text-xs font-black px-2.5 py-1 rounded-full bg-orange-500 text-white">↗ OUTBOUND</span>
+                  )}
+                  {status === 'neutral' && (
+                    <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-400">not {selectedSiteData?.name}&apos;s link</span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">{conn.context}</p>
+                {status !== 'neutral' && (
+                  <p className={`text-xs font-semibold mt-1.5 ${status === 'inbound' ? 'text-emerald-700 dark:text-emerald-300' : 'text-orange-700 dark:text-orange-300'}`}>
+                    {status === 'inbound'
+                      ? `↙ This link points INTO ${selectedSiteData?.name} — inbound for them`
+                      : `↗ ${selectedSiteData?.name} placed this link pointing OUT — outbound for them`}
+                  </p>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {selectedSite === 'techblog' && (
+          <div className="bg-fuchsia-50 dark:bg-fuchsia-950 border border-fuchsia-100 dark:border-fuchsia-800 rounded-xl p-3">
+            <p className="text-xs font-bold text-fuchsia-800 dark:text-fuchsia-200">💡 TechBlog.com has BOTH types simultaneously</p>
+            <p className="text-xs text-fuchsia-700 dark:text-fuchsia-300 mt-1">NewsWire links TO TechBlog (1 inbound) while TechBlog links OUT to 2 sites (2 outbound). Every real website has both — there is no such thing as a site with only one type.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Rapid-fire challenge */}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden">
+        <div className="bg-gradient-to-r from-fuchsia-600 to-violet-700 px-5 py-4">
+          <p className="font-bold text-white">🎯 Challenge: 8 Real-world Scenarios</p>
+          <p className="text-fuchsia-200 text-xs mt-0.5">Read each scenario carefully — the same link can have a different answer depending on whose perspective is asked.</p>
+        </div>
+
+        {finished ? (
+          <div className="p-5 space-y-4">
+            {(() => {
+              const correct = answers.filter((a, i) => a === SCENARIOS_S9[i].answer).length
+              const pct     = Math.round((correct / SCENARIOS_S9.length) * 100)
+              return (
+                <>
+                  <div className={`rounded-xl p-4 text-center ${pct >= 75 ? 'bg-emerald-50 dark:bg-emerald-950' : 'bg-amber-50 dark:bg-amber-950'}`}>
+                    <p className="text-3xl font-black text-gray-900 dark:text-gray-50">{correct} / {SCENARIOS_S9.length}</p>
+                    <p className={`text-sm font-bold mt-1 ${pct >= 75 ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
+                      {pct >= 87 ? '🏆 Link Direction Master!' : pct >= 75 ? '✅ Solid understanding!' : pct >= 50 ? '⚠️ Getting there — review the ones you missed' : '📚 Re-read the perspective lab above and try again'}
+                    </p>
+                  </div>
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                    {SCENARIOS_S9.map((s, i) => {
+                      const userAns = answers[i]
+                      const isRight = userAns === s.answer
+                      return (
+                        <div key={i} className={`rounded-xl border p-3 ${isRight ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/50' : 'border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-950/50'}`}>
+                          <div className="flex items-start gap-2 mb-1">
+                            <span className={`text-xs font-black flex-shrink-0 ${isRight ? 'text-emerald-600' : 'text-red-600'}`}>{isRight ? '✓' : '✗'}</span>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">{s.question}</p>
+                          </div>
+                          {!isRight && (
+                            <div className="flex gap-3 ml-4 mb-1">
+                              <span className="text-xs text-red-600 dark:text-red-400">You: {userAns}</span>
+                              <span className="text-xs text-emerald-600 dark:text-emerald-400">Answer: {s.answer}</span>
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-500 dark:text-gray-400 ml-4">{s.why}</p>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )
+            })()}
+          </div>
+        ) : (
+          <div className="p-5 space-y-4">
+            {/* Progress */}
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+              <span>{current + 1} / {SCENARIOS_S9.length}</span>
+              <span>{answers.filter((a, i) => a !== null && a === SCENARIOS_S9[i].answer).length} correct so far</span>
+            </div>
+            <div className="h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-full bg-fuchsia-500 rounded-full transition-all duration-300" style={{ width: `${(current / SCENARIOS_S9.length) * 100}%` }} />
+            </div>
+
+            {/* Scenario card */}
+            <AnimatePresence mode="wait">
+              <motion.div key={current}
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.22 }}
+                className="space-y-3"
+              >
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 px-4 py-3">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Scenario</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{q.situation}</p>
+                </div>
+                <div className="bg-fuchsia-50 dark:bg-fuchsia-950 rounded-xl border border-fuchsia-100 dark:border-fuchsia-800 px-4 py-3">
+                  <p className="text-[10px] font-bold text-fuchsia-500 uppercase tracking-widest mb-1">Question</p>
+                  <p className="text-sm font-semibold text-fuchsia-900 dark:text-fuchsia-100">{q.question}</p>
+                </div>
+
+                {showFeedback && answers[current] !== null && (
+                  <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }}
+                    className={`rounded-xl p-3 border ${answers[current] === q.answer
+                      ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-200 dark:border-emerald-800'
+                      : 'bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800'}`}>
+                    <p className={`font-bold text-sm mb-1 ${answers[current] === q.answer ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
+                      {answers[current] === q.answer ? '✅ Correct!' : `❌ It's "${q.answer}"`}
+                    </p>
+                    <p className={`text-xs ${answers[current] === q.answer ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{q.why}</p>
+                  </motion.div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+
+            {/* Answer buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <button disabled={answers[current] !== null} onClick={() => handleAnswer('inbound')}
+                className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition active:scale-95">
+                ↙ Inbound
+              </button>
+              <button disabled={answers[current] !== null} onClick={() => handleAnswer('outbound')}
+                className="bg-orange-500 hover:bg-orange-600 disabled:opacity-40 text-white font-bold py-4 rounded-2xl transition active:scale-95">
+                ↗ Outbound
+              </button>
+            </div>
+            <p className="text-xs text-gray-400 text-center">Inbound = link coming IN to that site · Outbound = link going OUT from that site</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Station Card (overview grid)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1378,6 +1731,7 @@ const STATION_META = [
   { num: 6, title: 'White Hat vs Black Hat', emoji: '🎭', color: 'from-slate-600 to-gray-700', desc: 'Sort 15 tactics into the right bucket' },
   { num: 7, title: 'URL Anatomy Dissector', emoji: '🔗', color: 'from-cyan-500 to-sky-600', desc: 'Label URL parts · Build the perfect slug' },
   { num: 8, title: 'Backlink Quality Arena', emoji: '🏆', color: 'from-orange-500 to-rose-600', desc: 'Rank 8 backlinks from best to worst' },
+  { num: 9, title: 'Link Direction Lab', emoji: '🧭', color: 'from-fuchsia-600 to-violet-700', desc: 'Classify 8 link scenarios as inbound or outbound' },
 ]
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1397,14 +1751,14 @@ export default function Lesson28Playground() {
 
   const totalScore = Object.values(scores).reduce((a, b) => a + b, 0)
   const maxTotal = MAX_SCORES.reduce((a, b) => a + b, 0)
-  const allDone = completed.size === 8
+  const allDone = completed.size === 9
 
   const handleOpenStation = (num: number) => {
     setActiveStation(num)
     setTimeout(() => stationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50)
   }
 
-  const STATION_COMPONENTS = [Station1, Station2, Station3, Station4, Station5, Station6, Station7, Station8]
+  const STATION_COMPONENTS = [Station1, Station2, Station3, Station4, Station5, Station6, Station7, Station8, Station9]
   const ActiveComponent = activeStation ? STATION_COMPONENTS[activeStation - 1] : null
 
   return (
@@ -1418,16 +1772,16 @@ export default function Lesson28Playground() {
           <p className="text-rose-100 text-sm font-semibold uppercase tracking-widest mb-3">Module 4 · Interactive Learning</p>
           <h2 className="text-3xl font-bold mb-3">SEO Playground</h2>
           <p className="text-rose-50 leading-relaxed max-w-lg mb-5">
-            8 hands-on stations. No passive reading — you build, toggle, classify, and rank. Every station reinforces a concept from Modules 1–3.
+            9 hands-on stations. No passive reading — you build, toggle, classify, and rank. Every station reinforces a concept from Modules 1–3.
           </p>
           {allDone ? (
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white font-bold px-4 py-2 rounded-xl border border-white/30">
-              🏆 {completed.size}/8 completed · {totalScore}/{maxTotal} XP
+              🏆 {completed.size}/9 completed · {totalScore}/{maxTotal} XP
             </div>
           ) : (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white font-semibold px-4 py-2 rounded-xl border border-white/30">
-                {completed.size}/8 stations done
+                {completed.size}/9 stations done
               </div>
               {completed.size > 0 && (
                 <div className="text-rose-100 text-sm">{totalScore} XP earned</div>
@@ -1444,7 +1798,7 @@ export default function Lesson28Playground() {
             className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl p-6 text-center">
             <p className="text-3xl mb-2">🎓</p>
             <p className="text-xl font-black mb-1">Playground Graduate!</p>
-            <p className="text-emerald-100">You completed all 8 stations and scored <strong>{totalScore}/{maxTotal} XP</strong>. You now have hands-on experience with the core concepts behind every guest post AMRYTT Media delivers.</p>
+            <p className="text-emerald-100">You completed all 9 stations and scored <strong>{totalScore}/{maxTotal} XP</strong>. You now have hands-on experience with the core concepts behind every guest post AMRYTT Media delivers.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -1506,7 +1860,7 @@ export default function Lesson28Playground() {
           >
             <div className="flex items-center justify-between mb-6">
               <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                Active: Station {activeStation} of 8
+                Active: Station {activeStation} of 9
               </p>
               <button onClick={() => setActiveStation(null)}
                 className="text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg transition">
@@ -1527,8 +1881,8 @@ export default function Lesson28Playground() {
                 ← Station {activeStation - 1}
               </button>
               <button
-                onClick={() => handleOpenStation(Math.min(8, activeStation + 1))}
-                disabled={activeStation === 8}
+                onClick={() => handleOpenStation(Math.min(9, activeStation + 1))}
+                disabled={activeStation === 9}
                 className="bg-rose-600 hover:bg-rose-700 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition">
                 Station {activeStation + 1} →
               </button>
